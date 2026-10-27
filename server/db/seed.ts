@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Pool } from 'mysql2/promise';
 import type { Config } from '../config.ts';
@@ -34,15 +34,16 @@ export async function seed(pool: Pool, config: Config): Promise<void> {
         const existingProducts = await rows(db, 'SELECT id FROM product LIMIT 1');
         if (!existingProducts.length) {
             const [seller] = await rows(db, "SELECT id FROM app_user WHERE demo_account='seller'");
-            // 自绘 PNG 演示封面由 setup 时的 seed-covers 脚本生成，不依赖外部图片站。
+            // 摄影素材随仓库保存，初始化离线可用；只为空库创建，不覆盖组员商品。
             const products = [['高等数学学习笔记', '每章都有整理，适合期末复习。校内当面交接。', 1800, 1], ['宿舍阅读台灯', '三档亮度，功能完好，附原装充电线。', 3500, 3], ['羽毛球拍一对', '课程结束转让，握把已更换。', 5000, 4], ['机械键盘', '宿舍自用，按键正常，已清洁。', 12000, 2]] as const;
             for (const [index, item] of products.entries()) {
-                const filename = randomUUID() + '.png';
-                const { makeCover } = await import('./seed-covers.ts');
-                const bytes = makeCover(index);
+                const filename = randomUUID() + '.jpg';
+                const photo = ['notebook.jpg', 'lamp.jpg', 'racket.jpg', 'keyboard.jpg'][index];
+                const bytes = await readFile(join('assets', 'demo-products', photo));
                 await writeFile(join(config.uploadDir, filename), bytes);
-                const asset = await run(db, "INSERT INTO upload_asset (owner_id,storage_key,content_type,byte_size) VALUES (?,?,'image/png',?)", [seller.id, filename, bytes.length]);
-                const product = await run(db, "INSERT INTO product (seller_id,category_id,title,normalized_title,description,price_cents,condition_label,status,created_at) VALUES (?,?,?,?,?,?,'GOOD','ON_SALE',DATE_SUB(UTC_TIMESTAMP(3),INTERVAL 7 DAY))", [seller.id, item[3], item[0], item[0], item[1], item[2]]);
+                const asset = await run(db, "INSERT INTO upload_asset (owner_id,storage_key,content_type,byte_size) VALUES (?,?,'image/jpeg',?)", [seller.id, filename, bytes.length]);
+                const description = item[1] + '\n\n课堂演示样图：图片为授权摄影素材，非本组实物拍摄。';
+                const product = await run(db, "INSERT INTO product (seller_id,category_id,title,normalized_title,description,price_cents,condition_label,status,created_at) VALUES (?,?,?,?,?,?,'GOOD','ON_SALE',DATE_SUB(UTC_TIMESTAMP(3),INTERVAL 7 DAY))", [seller.id, item[3], item[0], item[0], description, item[2]]);
                 await run(db, 'INSERT INTO product_image (product_id,asset_id,sort_order) VALUES (?,?,0)', [product.insertId, asset.insertId]);
             }
         }

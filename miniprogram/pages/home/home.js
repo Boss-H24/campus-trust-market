@@ -1,13 +1,13 @@
 const api = require('../../utils/api');
 const format = require('../../utils/format');
 Page({
-    data: { categories: [], categoryId: '', keyword: '', minPrice: '', maxPrice: '', showFilters: false, items: [], page: 1, total: 0, error: '', loading: false },
-    onLoad() { api.request('/api/categories', { quiet: true }).then(data => this.setData({ categories: data.items })).catch(err => api.error(this, err)); },
+    data: { categories: [], categoryId: '', keyword: '', minPrice: '', maxPrice: '', activeDeal: '', hasFilters: false, showFilters: false, items: [], page: 1, total: 0, error: '', loading: false },
+    onLoad() { api.request('/api/categories', { quiet: true }).then(data => this.setData({ categories: data.items.map(category => ({ ...category, symbol: { '教材资料': '书', '数码电子': '键', '生活用品': '灯', '运动器材': '球' }[category.name] || '物' })) })).catch(err => api.error(this, err)); },
     onShow() { this.load(true); },
     async load(reset) {
         const sequence = (this.sequence || 0) + 1;
         this.sequence = sequence;
-        this.setData({ loading: true, error: '' });
+        this.setData({ loading: true, error: '', hasFilters: !!(this.data.categoryId || this.data.keyword.trim() || this.data.minPrice !== '' || this.data.maxPrice !== '') });
         try {
             const query = { page: reset ? 1 : this.data.page + 1, pageSize: 20 };
             if (this.data.categoryId)
@@ -34,9 +34,22 @@ Page({
             wx.stopPullDownRefresh();
         }
     },
-    input(e) { this.setData({ [e.currentTarget.dataset.field]: e.detail.value }); },
-    search() { this.load(true); },
-    chooseCategory(e) { this.setData({ categoryId: e.currentTarget.dataset.id }); this.load(true); },
+    input(e) { this.setData({ [e.currentTarget.dataset.field]: e.detail.value, activeDeal: '' }); },
+    search() { return this.load(true); },
+    chooseCategory(e) { this.setData({ categoryId: e.currentTarget.dataset.id, activeDeal: '' }); return this.load(true); },
+    chooseDeal(e) {
+        const deal = e.currentTarget.dataset.deal;
+        if (!['budget', 'books', 'dorm'].includes(deal)) return;
+        let categoryId = '';
+        if (deal !== 'budget') {
+            const category = this.data.categories.find(item => item.name === (deal === 'books' ? '教材资料' : '生活用品'));
+            if (!category) { this.setData({ error: '分类尚未加载，请稍后重试' }); return; }
+            categoryId = category.id;
+        }
+        this.setData({ activeDeal: deal, categoryId, keyword: '', minPrice: '', maxPrice: deal === 'budget' ? '50' : '', showFilters: false });
+        return this.load(true);
+    },
+    resetFilters() { this.setData({ activeDeal: '', categoryId: '', keyword: '', minPrice: '', maxPrice: '', showFilters: false }); return this.load(true); },
     toggleFilters() { this.setData({ showFilters: !this.data.showFilters }); },
     open(e) { wx.navigateTo({ url: '/pages/detail/detail?id=' + e.currentTarget.dataset.id }); },
     onReachBottom() { if (!this.data.loading && this.data.items.length < this.data.total)

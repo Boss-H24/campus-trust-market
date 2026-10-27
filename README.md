@@ -4,11 +4,13 @@
 
 当前交付是**成员 A 的可运行增量**：登录、学生认证、人工审核、商品发布检索、上下架、隐私保护与测试。订单、模拟支付、评价信誉、咨询和举报由 B/C 继续实现，当前界面不会伪造这些功能已完成。
 
-验收状态：后端业务测试、官方WXML/WXSS编译和真实模拟器九步完整流程已通过。首次空白由开发工具基础库缓存移动失败引起，现已恢复；默认隐藏上传目录中的图片访问也已补回归并修复。真机及微信平台真实登录的联调状态单列于测试报告。
+验收状态：13项单元/页面测试、9组真实MySQL集成、官方WXML/WXSS编译和真实模拟器十步完整流程已通过。100并发请求全部成功，本机p95为110.95ms。真机及微信平台真实登录的联调状态单列于测试报告。
+
+组员从[交接包入口](docs/handoff/README.md)开始，按[任务看板](docs/tasks.md)认领工作；分支、PR与提交约定见[仓库协作说明](CONTRIBUTING.md)。当前完整交付分支为 `feature/interface-polish`，见[PR #1](https://github.com/Boss-H24/campus-trust-market/pull/1)，另一位组员复核后合入 `main`。
 
 界面预览：[校园首页](docs/images/home.jpg)、[商品详情](docs/images/detail.png)。图片来自真实开发者工具，商品与学生身份均为虚构演示数据。
 
-独立内容补充：[四件商品摄影样图与来源](assets/demo-products/README.md)、[上传后的首页](assets/demo-products/preview.jpg)。样图已在本机通过正常上传和审核流程配置；新机器可在编辑页面选择该目录图片，不会由seed自动覆盖组员数据。
+商品摄影素材及来源见[样图说明](assets/demo-products/README.md)。新环境首次初始化即有四件摄影样图商品；再次seed不会覆盖组员已有商品。已有环境可在编辑页面选择该目录图片，修改后仍须管理员审核。
 
 ## 快速运行 Windows
 
@@ -29,7 +31,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
 
 1. 安装[微信开发者工具](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)，选择“导入项目”，目录为 `miniprogram`。
 2. 当前项目已配置本组申请的测试号 AppID `wx586d8f7c807a2c06`。使用该号需要相应开发权限；组员也可换成自己的测试号或 `touristappid`。本地调试关闭合法域名校验，工具可能要求先登录微信。
-3. 保持后端启动，在“我的”中选择“课堂演示登录”，输入 `.env` 中的 `DEMO_PASSWORD`。
+3. 保持后端启动，在“我的”中选择“课堂演示登录”，输入 `.env` 中的 `DEMO_PASSWORD`。登录页根据服务端开关显示可用方式，未配置微信密钥时直接提供课堂演示身份。
 4. 真机不能访问电脑的 `127.0.0.1`。真机联调时把 `miniprogram/config.js` 改为电脑局域网地址，同时修改 `.env` 的 `HOST`，配置网络访问。上线使用 HTTPS 和已登记域名。
 
 真实微信登录：配置服务端 `.env` 中的 `WECHAT_APP_ID`、`WECHAT_APP_SECRET`，以及小程序 `project.config.json` 中的同一个 AppID。密钥只放服务端；`session_key` 不返回客户端。`NODE_ENV=production` 强制禁用演示登录并要求微信配置。当前已配置测试号 AppID，AppSecret 尚未配置，平台真实登录未验收。
@@ -67,6 +69,9 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
 ## 协作文档
 
 - [三人分工及交接契约](docs/team-handoff.md)
+- [B/C交接包与首次接入](docs/handoff/README.md)
+- [实施任务规划及认领清单](docs/tasks.md)
+- [仓库目录、分支和PR约定](CONTRIBUTING.md)
 - [实现说明及数据库关系](docs/design.md)
 - [OpenAPI 接口契约](docs/openapi.json)
 - [测试记录与人工验收单](docs/test-report.md)

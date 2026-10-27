@@ -17,23 +17,31 @@ const config=getConfig();config.database=process.env.TEST_DB_NAME;
 config.wechatAppId='';config.wechatAppSecret='';
 assert.equal(config.database,process.env.DB_NAME+'_test');
 const uploads=await mkdtemp(join(tmpdir(),'campus-simulator-'));config.uploadDir=uploads;
-const pool=createPool(config);let server,mp;const steps=[],exceptions=[];
+const pool=createPool(config);let server,mp,lastCommand,currentStep,loginStage,albumMocked=false;const steps=[],exceptions=[],readyPageIds=new Set();
 await mkdir('.artifacts',{recursive:true});
+await writeFile('.artifacts/simulator-report.json',JSON.stringify({date:new Date().toISOString(),passed:false,status:'running'},null,2));
+async function restoreAlbum(){if(!albumMocked)return;albumMocked=false;await mp.restoreWxMethod('chooseImage');}
 async function bounded(label,operation,timeout=30000){let timer;try{return await Promise.race([operation(),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label+'超时')),timeout);})]);}finally{clearTimeout(timer);}}
 async function until(check,message,timeout=20000){const end=Date.now()+timeout;while(Date.now()<end){if(await check())return;await new Promise(resolve=>setTimeout(resolve,250));}throw new Error(message);}
-async function pageAt(path){let page;await until(async()=>{page=await bounded('获取页面',()=>mp.currentPage(),8000);return page?.path===path;},'未进入页面 '+path);return page;}
-async function tap(page,selector){const element=await page.$(selector);assert.ok(element,'找不到控件 '+selector);await element.tap();}
-async function fill(page,field,value){const element=await page.$(`input[data-field="${field}"]`)||await page.$(`textarea[data-field="${field}"]`);assert.ok(element,'找不到输入框 '+field);await element.input(value);}
-async function record(label,operation){await bounded(label,operation,45000);steps.push(label);console.log('PASS '+label);}
+async function pageAt(path){let page;await until(async()=>{page=await bounded('获取页面',()=>mp.currentPage(),8000);return page?.path===path;},'未进入页面 '+path);if(!readyPageIds.has(page.id)){/* SDK的changeRoute同样等待3秒，路由元数据先于新页面桥接就绪。 */await page.waitFor(3000);readyPageIds.add(page.id);}return page;}
+async function tap(page,selector){await bounded('等待控件 '+selector,()=>page.waitFor(selector),15000);const element=await page.$(selector);assert.ok(element,'找不到控件 '+selector);await element.tap();}
+async function fill(page,field,value){const selector=`[data-field="${field}"]`;await bounded('等待输入框 '+field,()=>page.waitFor(selector),15000);const element=await page.$(selector);assert.ok(element,'找不到输入框 '+field);await element.input(value);}
+async function record(label,operation){currentStep=label;await bounded(label,operation,45000);steps.push(label);console.log('PASS '+label);}
 async function login(index){
+  loginStage='打开个人页';
   await mp.switchTab('/pages/profile/profile');let page=await pageAt('pages/profile/profile');
+  await bounded('个人页控件就绪',()=>page.waitFor('button'),15000);
+  loginStage='读取当前身份';
   await until(async()=>!(await page.data()).user||!!(await page.data()).user.id,'个人页尚未加载');
   if((await page.data()).user){await tap(page,'button.secondary');await until(async()=>!(await page.data()).user,'退出未完成');}
-  await tap(page,'button.primary');page=await pageAt('pages/login/login');
+  loginStage='打开登录页';await tap(page,'button.primary');page=await pageAt('pages/login/login');
+  await bounded('演示登录控件就绪',()=>page.waitFor('button[data-mode="demo"]'),15000);
+  loginStage='读取登录方式';
   await until(async()=>(await page.data()).demoEnabled,'演示登录不可用');
-  await (await page.$('picker')).trigger('change',{value:String(index)});
+  assert.equal(await page.$('button[data-mode="wechat"]'),null,'未配置微信平台时应隐藏不可用登录按钮');
+  loginStage='选择演示身份';await (await page.$('picker')).trigger('change',{value:String(index)});
   await (await page.$('input')).input(config.demoPassword);
-  await tap(page,'button[data-mode="demo"]');
+  loginStage='提交演示登录';await tap(page,'button[data-mode="demo"]');
   page=await pageAt('pages/profile/profile');await until(async()=>!!(await page.data()).user,'登录失败');return page;
 }
 async function openAdmin(mode){const profile=await login(3);const links=await profile.$$('.line');await links[2].tap();const page=await pageAt('pages/admin/admin');await until(async()=>!(await page.data()).loading,'审核页加载失败');if(mode==='products'){await (await page.$$('.tabs button'))[1].tap();await until(async()=>{const data=await page.data();return data.mode==='products'&&!data.loading&&data.items.length>0;},'商品队列加载失败');}else{await until(async()=>{const data=await page.data();return data.mode==='certifications'&&!data.loading&&data.items.length>0;},'认证队列加载失败');}return page;}
@@ -42,10 +50,22 @@ try{
   server=createApp(config,pool).listen(3000,'127.0.0.1');
   await new Promise((resolve,reject)=>{server.once('listening',resolve);server.once('error',reject);});
   mp=await bounded('连接模拟器',()=>automator.connect({wsEndpoint:'ws://127.0.0.1:9420'}));
+  const send=mp.connection.send.bind(mp.connection);mp.connection.send=(method,params)=>{lastCommand={method,pageId:params?.pageId,path:params?.path,selector:params?.selector,wxMethod:params?.method};return send(method,params);};
   mp.on('exception',error=>exceptions.push(error.message||error.text||'小程序未处理异常'));
   await bounded('等待小程序运行时',()=>mp.currentPage(),15000);
   await mp.callWxMethod('removeStorageSync','token');await mp.callWxMethod('removeStorageSync','user');await mp.callWxMethod('removeStorageSync','editingProductId');
   await record('原生首页与真实商品数据',async()=>{const page=await mp.reLaunch('/pages/home/home');await until(async()=>(await page.data()).items.length===4,'首页商品未加载');assert.equal(await page.data('error'),'');await mp.screenshot({path:'.artifacts/simulator-home.png'});});
+  await record('原生导购、分类、价格筛选及清除条件',async()=>{
+    const page=await pageAt('pages/home/home');
+    assert.ok((await page.data()).items.every(item=>item.cover&&item.conditionText),'摄影封面或成色未加载');
+    await tap(page,'.deal[data-deal="budget"]');await until(async()=>{const d=await page.data();return !d.loading&&d.activeDeal==='budget'&&d.items.length===3;},'50元以内筛选失败');assert.ok((await page.data()).items.every(item=>item.priceCents<=5000));
+    await tap(page,'.deal[data-deal="books"]');await until(async()=>{const d=await page.data();return !d.loading&&d.items.length===1&&d.items[0].categoryId==='1';},'教材专区筛选失败');
+    await tap(page,'.deal[data-deal="dorm"]');await until(async()=>{const d=await page.data();return !d.loading&&d.items.length===1&&d.items[0].categoryId==='3';},'宿舍好物筛选失败');
+    await tap(page,'.reset-filter');await until(async()=>{const d=await page.data();return !d.loading&&!d.hasFilters&&d.items.length===4;},'清除分类失败');
+    await tap(page,'.category[data-id="2"]');await until(async()=>{const d=await page.data();return !d.loading&&d.items.length===1&&d.items[0].categoryId==='2';},'图标分类失败');await tap(page,'.reset-filter');
+    await tap(page,'.filter-link');await until(async()=>(await page.data()).showFilters,'价格表单未打开');await fill(page,'minPrice','20');await fill(page,'maxPrice','60');await tap(page,'.price-filter button');await until(async()=>{const d=await page.data();return !d.loading&&d.items.length===2;},'手动价格筛选失败');assert.ok((await page.data()).items.every(item=>item.priceCents>=2000&&item.priceCents<=6000));await tap(page,'.reset-filter');
+    await (await page.$('.search-row input')).input('不存在的演示商品zx');await tap(page,'.search-row button');await until(async()=>!(await page.data()).loading&&(await page.data()).items.length===0,'空结果未呈现');await tap(page,'.empty button');await until(async()=>{const d=await page.data();return !d.loading&&!d.hasFilters&&d.items.length===4;},'空结果恢复失败');
+  });
   await record('未认证学生通过真实登录页提交实名',async()=>{const profile=await login(2);assert.equal((await profile.data()).user.certificationStatus,'UNVERIFIED');await (await profile.$$('.line'))[0].tap();const page=await pageAt('pages/certification/certification');await fill(page,'realName','林同学');await fill(page,'studentId','2023000004');await fill(page,'phone','13800000004');await tap(page,'button.primary');await until(async()=>(await page.data()).status==='PENDING','实名提交失败');});
   await record('管理员在原生队列审核认证',async()=>{const page=await openAdmin('certifications');assert.equal((await page.data()).items.length,1);await tap(page,'.actions button.primary');await until(async()=>!(await page.data()).items.length,'实名审核失败');});
   let productId;
@@ -54,7 +74,8 @@ try{
     await login(2);const page=await mp.switchTab('/pages/publish/publish');await until(async()=>(await page.data()).user?.certificationStatus==='VERIFIED','发布页认证未更新');
     const photo=await mp.evaluate(base64=>{const path=wx.env.USER_DATA_PATH+'/simulator-course-cover.png';wx.getFileSystemManager().writeFileSync(path,base64,'base64');return path;},makeCover(0).toString('base64'));
     await mp.mockWxMethod('chooseImage',{tempFilePaths:[photo],tempFiles:[{path:photo,size:makeCover(0).length}]});
-    await tap(page,'.add-photo');await until(async()=>{const data=await page.data();return data.images.length===1&&!data.uploading;},'图片上传失败');await mp.restoreWxMethod('chooseImage');
+    albumMocked=true;
+    await tap(page,'.add-photo');await until(async()=>{const data=await page.data();return data.images.length===1&&!data.uploading;},'图片上传失败');await restoreAlbum();
     await fill(page,'title',title);await fill(page,'price','12.30');await fill(page,'description','软件工程课程教材，内页整洁，可在校内交接。');await mp.screenshot({path:'.artifacts/simulator-publish.png'});await tap(page,'button.primary');
     const detail=await pageAt('pages/detail/detail');await until(async()=>!!(await detail.data()).product,'商品详情未加载');const product=(await detail.data()).product;assert.equal(product.status,'PENDING');assert.equal(product.priceCents,1230);productId=product.id;await mp.screenshot({path:'.artifacts/simulator-pending.png'});
   });
@@ -66,11 +87,13 @@ try{
   await record('重新审核并由卖家下架',async()=>{const admin=await openAdmin('products');await tap(admin,'.actions button.primary');await until(async()=>!(await admin.data()).items.length,'再次审核失败');const profile=await login(2);await (await profile.$$('.line'))[1].tap();const mine=await pageAt('pages/mine/mine');await until(async()=>(await mine.data()).items[0]?.status==='ON_SALE','商品状态未更新');const actions=await mine.$$('.actions button.secondary');await actions[1].tap();await until(async()=>(await mine.data()).items[0]?.status==='OFF_SHELF','下架失败');await mp.screenshot({path:'.artifacts/simulator-mine.png'});});
   await record('下架商品不再公开展示',async()=>{const profile=await mp.switchTab('/pages/profile/profile');await until(async()=>!!(await profile.data()).user,'个人页未加载');await tap(profile,'button.secondary');const page=await mp.switchTab('/pages/home/home');await (await page.$('.search-row input')).input(title);await tap(page,'.search-row button');await until(async()=>!(await page.data()).loading&&(await page.data()).items.length===0,'下架商品仍被检索');});
   assert.equal(exceptions.length,0,'模拟器出现未处理异常');
-  await writeFile('.artifacts/simulator-report.json',JSON.stringify({date:new Date().toISOString(),passed:true,steps,database:config.database,albumPicker:'提供虚构图片的相册回调；图像读取、压缩类型识别、上传和业务接口使用真实实现',unhandledExceptions:exceptions},null,2));
-  console.log('Native simulator workflow passed: '+steps.length+' steps.');
-}catch(error){console.error(error.stack);await writeFile('.artifacts/simulator-report.json',JSON.stringify({date:new Date().toISOString(),passed:false,steps,error:error.message},null,2));process.exitCode=1;}
+}catch(error){console.error(error.stack);console.error(JSON.stringify({currentStep,loginStage,lastCommand}));await writeFile('.artifacts/simulator-report.json',JSON.stringify({date:new Date().toISOString(),passed:false,steps,currentStep,loginStage,lastCommand,error:error.message},null,2));process.exitCode=1;}
 finally{
-  if(mp){await mp.restoreWxMethod('chooseImage').catch(()=>{});await mp.callWxMethod('removeStorageSync','token').catch(()=>{});await mp.callWxMethod('removeStorageSync','user').catch(()=>{});await mp.disconnect();}
+  if(mp){await restoreAlbum();await mp.callWxMethod('removeStorageSync','token');await mp.callWxMethod('removeStorageSync','user');await mp.disconnect();}
   if(server){server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
   await pool.end();assert.equal(dirname(resolve(uploads)),resolve(tmpdir()));await rm(uploads,{recursive:true,force:true});
+}
+if(process.exitCode!==1){
+  await writeFile('.artifacts/simulator-report.json',JSON.stringify({date:new Date().toISOString(),passed:true,steps,database:config.database,albumPicker:'提供虚构图片的相册回调；图像读取、压缩类型识别、上传和业务接口使用真实实现',unhandledExceptions:exceptions},null,2));
+  console.log('Native simulator workflow passed: '+steps.length+' steps.');
 }

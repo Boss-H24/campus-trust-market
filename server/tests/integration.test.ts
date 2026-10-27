@@ -1,6 +1,6 @@
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createPool } from '../db/database.ts';
@@ -82,7 +82,15 @@ after(async () => { if (server) {
 } await pool.end(); if (testRoot)
     await rm(testRoot, { recursive: true, force: true }); });
 test('TC-USER：真实数据库健康检查、登录失败、令牌过期及注销', async () => {
-    assert.equal((await api('/api/health')).status, 200);
+    const health = await api('/api/health');
+    assert.equal(health.status, 200);
+    assert.equal(health.data.wechatLoginEnabled, false, '未配置微信密钥时不应提供可用微信登录入口');
+    config.wechatAppId = 'wx-test-config'; config.wechatAppSecret = 'test-config-secret';
+    try {
+        const configured = await api('/api/health');
+        assert.equal(configured.data.wechatLoginEnabled, true);
+        assert.equal(JSON.stringify(configured.data).includes('test-config-secret'), false);
+    } finally { config.wechatAppId = ''; config.wechatAppSecret = ''; }
     assert.equal((await api('/api/users/me')).status, 401);
     assert.equal((await api('/api/auth/dev-login', { method: 'POST', body: { account: 'admin', password: 'wrong' } })).status, 401);
     assert.equal((await api('/api/users/me', { token: 'random' })).status, 401);
@@ -97,6 +105,23 @@ test('TC-USER：真实数据库健康检查、登录失败、令牌过期及注�
     const relogin = await api('/api/auth/dev-login', { method: 'POST', token: 'expired-invalid-session-token', body: { account: 'outsider', password: config.demoPassword } });
     assert.equal(relogin.status, 200, '登录端点不应被旧令牌阻断');
     assert.equal((await api('/api/auth/login', { method: 'POST', body: { code: 'demo' } })).status, 503);
+});
+
+test('TC-DEMO：新环境默认展示真实摄影样图，重复初始化不覆盖现有商品', async () => {
+    const before = await api('/api/products');
+    assert.equal(before.data.items.length, 4);
+    const manifest = JSON.parse(await readFile('assets/demo-products/manifest.json', 'utf8'));
+    for (const product of before.data.items) {
+        assert.match(product.description, /课堂演示样图/);
+        const entry = manifest.find((item: any) => item.title === product.title);
+        assert.ok(entry);
+        const media = await fetch(base + '/api/media/' + product.imageIds[0]);
+        assert.equal(media.status, 200);
+        assert.match(media.headers.get('content-type')!, /^image\/jpeg/);
+        assert.deepEqual(Buffer.from(await media.arrayBuffer()), await readFile(join('assets/demo-products', entry.file)));
+    }
+    await seed(pool, config);
+    assert.deepEqual((await api('/api/products')).data.items, before.data.items);
 });
 test('TC-CERT：提交、拒绝、重新提交、学籍校验及管理员审核', async () => {
     assert.equal((await api('/api/certifications', { method: 'POST', token: tokens.outsider, body: { realName: '冒充同学', studentId: '2023999999', school: config.schoolName, phone: '13800000005' } })).status, 400);

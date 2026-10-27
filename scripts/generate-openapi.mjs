@@ -33,7 +33,7 @@ function add(path, method, summary, input, output, mode = 'user', parameters = [
     doc.paths[path] ||= {};
     doc.paths[path][method] = operation;
 }
-add('/api/health', 'get', '数据库健康与演示开关', null, object({ status: { const: 'ok' }, database: { const: 'mysql' }, demoLoginEnabled: { type: 'boolean' }, schoolName: string }), 'none');
+add('/api/health', 'get', '数据库健康与登录方式开关', null, object({ status: { const: 'ok' }, database: { const: 'mysql' }, demoLoginEnabled: { type: 'boolean' }, wechatLoginEnabled: { type: 'boolean' }, schoolName: string }), 'none');
 add('/api/auth/login', 'post', '真实微信登录；未配置返回503', object({ code: { type: 'string', minLength: 1, maxLength: 200 } }, ['code']), ref('Session'), 'none');
 add('/api/auth/dev-login', 'post', '本地虚构演示身份登录；生产关闭', object({ account: { enum: ['seller', 'buyer', 'newstudent', 'admin', 'outsider'] }, password: { type: 'string', writeOnly: true } }, ['account', 'password']), ref('Session'), 'none');
 add('/api/auth/logout', 'post', '注销当前会话', null, { type: 'null' });

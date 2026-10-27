@@ -14,7 +14,7 @@
   "paths": {
     "/api/health": {
       "get": {
-        "summary": "数据库健康与演示开关",
+        "summary": "数据库健康与登录方式开关",
         "security": [],
         "parameters": [],
         "responses": {
@@ -41,6 +41,9 @@
                           "const": "mysql"
                         },
                         "demoLoginEnabled": {
+                          "type": "boolean"
+                        },
+                        "wechatLoginEnabled": {
                           "type": "boolean"
                         },
                         "schoolName": {

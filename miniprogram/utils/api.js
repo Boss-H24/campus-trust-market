@@ -29,7 +29,7 @@ function imagePath(assetId) {
 }
 async function decorate(product) {
     const format = require('./format');
-    return { ...product, priceText: format.money(product.priceCents), statusText: format.status(product.status), cover: product.imageIds.length ? await imagePath(product.imageIds[0]) : '' };
+    return { ...product, priceText: format.money(product.priceCents), conditionText: format.condition(product.condition), statusText: format.status(product.status), cover: product.imageIds.length ? await imagePath(product.imageIds[0]) : '' };
 }
 async function uploadFile(path) {
     const info = await new Promise((resolve, reject) => wx.getImageInfo({ src: path, success: resolve, fail: reject }));

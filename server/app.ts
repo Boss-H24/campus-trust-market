@@ -50,7 +50,7 @@ export function createApp(config: Config, pool: Pool) {
                 limits.delete(k);
         ensure(limits.size <= 10000, 429, 'RATE_LIMITED', '请求繁忙，请稍后重试');
     } ensure(++entry.count <= maximum, 429, 'RATE_LIMITED', '请求过于频繁，请稍后重试'); next(); };
-    app.get('/api/health', async (req, res) => { await rows(pool, 'SELECT 1'); ok(req, res, { status: 'ok', database: 'mysql', demoLoginEnabled: config.demoEnabled, schoolName: config.schoolName }); });
+    app.get('/api/health', async (req, res) => { await rows(pool, 'SELECT 1'); ok(req, res, { status: 'ok', database: 'mysql', demoLoginEnabled: config.demoEnabled, wechatLoginEnabled: !!(config.wechatAppId && config.wechatAppSecret), schoolName: config.schoolName }); });
     app.post('/api/auth/dev-login', rate('login', 30), async (req, res) => ok(req, res, await users.devLogin(req.body || {})));
     app.post('/api/auth/login', rate('login', 30), async (req, res) => ok(req, res, await users.wechatLogin(req.body || {})));
     app.post('/api/auth/logout', auth, async (req, res) => { await users.logout(bearer(req)); ok(req, res, null); });

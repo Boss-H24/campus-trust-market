@@ -3,7 +3,7 @@ Page({ data: { product: null, images: [], own: false, error: '', conditionText: 
         const product = await api.decorate(await api.request('/api/products/' + this.productId));
         const images = await Promise.all(product.imageIds.map(api.imagePath));
         const user = wx.getStorageSync('user');
-        this.setData({ product, images, own: !!user && user.id === product.sellerId, conditionText: { NEW: '全新', LIKE_NEW: '几乎全新', GOOD: '使用良好', FAIR: '有使用痕迹' }[product.condition] });
+        this.setData({ product, images, own: !!user && user.id === product.sellerId, conditionText: product.conditionText });
     }
     catch (err) {
         this.setData({ product: null });
