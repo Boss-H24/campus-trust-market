@@ -17,3 +17,5 @@ GitHub私有仓库已通过正常网页登录创建：https://github.com/Boss-H2
 用户已完成测试号扫码，非敏感AppID wx586d8f7c807a2c06 已配置到项目及本机.env，未提取AppSecret。首次本地提交4049f79。正常git push正在等待Git Credential Manager的“Connect to GitHub”窗口登录，已异步通知用户；没有读取或打印本机凭据。生产依赖npm audit 0漏洞；状态守卫反转变异实验被单元测试成功检出并已恢复。
 
 用户已安装开发者工具到E:/Apps/微信web开发者工具，主界面“项目列表”已打开。官方CLI因服务端口关闭不能自动导入，已异步请求用户开启。已找到工具内官方wcc/wcsc并直接验证：先观察WXML实体转义编译失败，再修复表达式，8页WXML与9份WXSS均原生编译通过；新增scripts/check-native.ps1可复验。后端已在127.0.0.1:3000启动（PID16508），健康检查实际返回MySQL正常。GitHub OAuth授权页已通过正常GCM“Sign in with your browser”按钮打开，等待用户确认，未代点授权。
+
+后续提交d8b8f0c包含原生编译修复和测试号配置。官方测试号页面有AppSecret标签，但当前界面未取得可用的已显示密钥值；本地WECHAT_APP_SECRET保持空，不重置凭据。剩余外部动作：GitHub OAuth用户确认、开发者工具服务端口开启/手动导入、随后完整UI验收与真实微信登录。远端仓库当前已建但代码未上传，不能标记远端交付或CI成功。
