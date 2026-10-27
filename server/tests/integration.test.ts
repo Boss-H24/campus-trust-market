@@ -10,6 +10,9 @@ import { getConfig } from '../config.ts';
 import { createApp } from '../app.ts';
 import type { Server } from 'node:http';
 const config = getConfig();
+// 外部微信平台单列联调，自动化业务测试不使用本机真实AppSecret。
+config.wechatAppId = '';
+config.wechatAppSecret = '';
 assert.match(process.env.TEST_DB_NAME || '', /^[a-zA-Z0-9_]+_test$/);
 config.database = process.env.TEST_DB_NAME!;
 const pool = createPool(config);

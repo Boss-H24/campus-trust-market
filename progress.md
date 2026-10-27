@@ -13,3 +13,7 @@
 独立审查完成：3项Important均RED→GREEN修复（商品及认证expectedVersion、跨账号私有草稿、无全局Node离线setup）。当前11项单元/页面测试、8组MySQL测试、8页面静态检查、20操作OpenAPI契约、类型/构建通过。较真实性能样本为独立测试库212件商品、100并发请求全部成功，p95=113.55ms；样例测试后删除。MySQL临时junction消失曾造成文件错误，已迁至LocalApplicationData/CampusTrustMarket专用junction并成功重启、离线setup。
 
 GitHub私有仓库已通过正常网页登录创建：https://github.com/Boss-H24/campus-trust-market。连接器installation为selected，新仓库暂未授权（API404），待正常Git推送。微信开发者工具官方安装包2.02.2608080已校验腾讯有效签名，按用户后续明确要求打开（PID22896）；安装位置由用户决定。官方测试号页 https://mp.weixin.qq.com/wxamp/sandbox 已打开并切到前台，等待用户扫码取得AppID。真实微信联调不计为已验收。
+
+用户已完成测试号扫码，非敏感AppID wx586d8f7c807a2c06 已配置到项目及本机.env，未提取AppSecret。首次本地提交4049f79。正常git push正在等待Git Credential Manager的“Connect to GitHub”窗口登录，已异步通知用户；没有读取或打印本机凭据。生产依赖npm audit 0漏洞；状态守卫反转变异实验被单元测试成功检出并已恢复。
+
+用户已安装开发者工具到E:/Apps/微信web开发者工具，主界面“项目列表”已打开。官方CLI因服务端口关闭不能自动导入，已异步请求用户开启。已找到工具内官方wcc/wcsc并直接验证：先观察WXML实体转义编译失败，再修复表达式，8页WXML与9份WXSS均原生编译通过；新增scripts/check-native.ps1可复验。后端已在127.0.0.1:3000启动（PID16508），健康检查实际返回MySQL正常。GitHub OAuth授权页已通过正常GCM“Sign in with your browser”按钮打开，等待用户确认，未代点授权。

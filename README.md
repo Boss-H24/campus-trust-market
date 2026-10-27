@@ -22,7 +22,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
 ### 微信开发者工具
 
 1. 安装[微信开发者工具](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)，选择“导入项目”，目录为 `miniprogram`。
-2. 当前 `appid` 为 `touristappid`。选择无 AppID / 测试模式；本地调试关闭合法域名校验。部分工具版本需要登录微信才能使用模拟器。
+2. 当前项目已配置本组申请的测试号 AppID `wx586d8f7c807a2c06`。使用该号需要相应开发权限；组员也可换成自己的测试号或 `touristappid`。本地调试关闭合法域名校验，工具可能要求先登录微信。
 3. 保持后端启动，在“我的”中选择“课堂演示登录”，输入 `.env` 中的 `DEMO_PASSWORD`。
 4. 真机不能访问电脑的 `127.0.0.1`。真机联调时把 `miniprogram/config.js` 改为电脑局域网地址，同时修改 `.env` 的 `HOST`，配置网络访问。上线使用 HTTPS 和已登记域名。
 
@@ -50,6 +50,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
 .\scripts\npm.ps1 run build
 .\scripts\npm.ps1 run test:integration
 .\scripts\npm.ps1 run test:performance
+# 可选：使用已安装的官方原生编译器检查模板和样式
+.\scripts\check-native.ps1 -DevToolsPath 'E:\Apps\微信web开发者工具'
 ```
 
 数据库初始化：`scripts/npm.ps1 run db:migrate`、`scripts/npm.ps1 run db:seed`。独立测试库为 `campus_market_test`，集成测试只重置该库；不会清空 `campus_market`。停止便携数据库执行 `scripts/stop-db.ps1`，先退出后端进程。
