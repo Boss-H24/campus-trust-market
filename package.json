@@ -1,0 +1,20 @@
+{
+  "name": "campus-trust-market",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24 <25" },
+  "scripts": {
+    "dev": "node --env-file=.env --watch server/main.ts",
+    "start": "node --env-file=.env dist/server/main.js",
+    "build": "tsc -p tsconfig.build.json",
+    "check": "tsc --noEmit && node scripts/check-miniprogram.mjs && node scripts/check-contracts.mjs",
+    "test": "node --test --experimental-test-coverage server/tests/unit.test.ts server/tests/miniprogram.test.ts",
+    "test:integration": "node --env-file=.env --test --test-concurrency=1 server/tests/integration.test.ts",
+    "test:performance": "node --env-file=.env scripts/performance.ts",
+    "db:migrate": "node --env-file=.env server/db/cli.ts migrate",
+    "db:seed": "node --env-file=.env server/db/cli.ts seed"
+  },
+  "dependencies": { "express": "^5.1.0", "mysql2": "^3.14.0" },
+  "devDependencies": { "@types/express": "^5.0.0", "@types/node": "^24.0.0", "typescript": "^5.9.0" }
+}

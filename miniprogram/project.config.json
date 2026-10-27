@@ -1,0 +1,9 @@
+{
+  "description": "高校二手物品可信交易课程设计 成员A",
+  "projectname": "campus-trust-market",
+  "appid": "touristappid",
+  "compileType": "miniprogram",
+  "miniprogramRoot": "./",
+  "setting": { "urlCheck": false, "es6": true, "postcss": true, "minified": true, "enhance": true },
+  "condition": {}
+}

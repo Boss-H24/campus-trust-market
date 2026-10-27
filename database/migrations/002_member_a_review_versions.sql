@@ -1,0 +1,1 @@
+ALTER TABLE user_certification ADD COLUMN version INT UNSIGNED NOT NULL DEFAULT 0;

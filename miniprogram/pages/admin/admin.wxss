@@ -1,0 +1,1 @@
+.tabs{display:flex;gap:16rpx}.tabs button{flex:1}.thumbnail{width:140rpx;height:140rpx;border-radius:10rpx}.section-title{font-size:30rpx}

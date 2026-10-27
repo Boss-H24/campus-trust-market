@@ -1,0 +1,8 @@
+{
+  "pages": ["pages/home/home", "pages/publish/publish", "pages/profile/profile", "pages/login/login", "pages/certification/certification", "pages/detail/detail", "pages/mine/mine", "pages/admin/admin"],
+  "window": { "navigationBarTitleText": "校园拾集", "navigationBarBackgroundColor": "#F3F7F5", "navigationBarTextStyle": "black", "backgroundColor": "#F3F7F5", "backgroundTextStyle": "dark" },
+  "tabBar": { "color": "#64746E", "selectedColor": "#166855", "backgroundColor": "#FFFFFF", "borderStyle": "white", "list": [{ "pagePath": "pages/home/home", "text": "逛校园" }, { "pagePath": "pages/publish/publish", "text": "发布闲置" }, { "pagePath": "pages/profile/profile", "text": "我的" }] },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

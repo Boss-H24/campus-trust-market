@@ -1,0 +1,1 @@
+.gallery{height:620rpx;background:#DCEAE2}.gallery image{width:100%;height:100%}.title{font-size:38rpx}.price{font-size:52rpx}.description{white-space:pre-wrap;line-height:1.9;color:#42584F}.seller-credit{color:#166855;font-size:40rpx;font-weight:700}.seller-credit text{font-size:22rpx;font-weight:400}

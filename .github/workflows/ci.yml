@@ -1,0 +1,44 @@
+name: member-a-checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: local-ci-only
+          MYSQL_DATABASE: campus_market
+          MYSQL_ROOT_HOST: '%'
+        ports: ['3307:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -plocal-ci-only"
+          --health-interval=10s --health-timeout=5s --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Create isolated CI configuration
+        run: |
+          node --input-type=module <<'JS'
+          import {writeFileSync} from 'node:fs';
+          import {randomBytes} from 'node:crypto';
+          writeFileSync('.env', `NODE_ENV=test\nHOST=127.0.0.1\nDB_HOST=127.0.0.1\nDB_PORT=3307\nDB_USER=root\nDB_PASSWORD=local-ci-only\nDB_NAME=campus_market\nTEST_DB_NAME=campus_market_test\nENCRYPTION_KEY=${randomBytes(32).toString('hex')}\nIDENTITY_HMAC_KEY=${randomBytes(32).toString('hex')}\nDEMO_LOGIN_ENABLED=true\nDEMO_PASSWORD=ci-demo-password-only\nSCHOOL_NAME=演示大学\nUPLOAD_DIR=.runtime/uploads\n`);
+          JS
+          node --input-type=module <<'JS'
+          import mysql from 'mysql2/promise';
+          const connection=await mysql.createConnection({host:'127.0.0.1',port:3307,user:'root',password:'local-ci-only'});
+          await connection.query('CREATE DATABASE campus_market_test CHARACTER SET utf8mb4');
+          await connection.end();
+          JS
+      - run: npm run check
+      - run: npm run build
+      - run: npm test
+      - run: npm run db:migrate && npm run db:seed
+      - run: npm run test:integration
+      - run: npm run test:performance
