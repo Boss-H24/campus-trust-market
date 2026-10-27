@@ -23,3 +23,9 @@ GitHub私有仓库已通过正常网页登录创建：https://github.com/Boss-H2
 用户确认Git已连接、服务端口已开。正常推送成功，随后通过现有127.0.0.1:7897代理核对远端main=本地cb92970，GitHub Actions实际显示completed successfully。官方CLI已导入项目；自动化9420已启用、Tool.getInfo返回基础库3.17.4。真实模拟器导航栏/TabBar可见但首页空白，调试器2错1警告；App.getCurrentPage超时，不能声称UI通过。
 
 已发现并读取安装包自带wechatide-skill0.3.11及debugger场景；安装检查compatible=true。check_wechatide_status自动发起Codex客户端授权但超时，单独auth也超时；已异步请求用户确认或复制Console原文。未读取/猜测CLI/MCP Token、未自授权。Windows防火墙放行弹窗已通过正常关闭请求取消，不新增放行规则。尝试官方automator客户端只做调试，后将其76个传递依赖从发布依赖中移除；候选原生流程脚本保存到忽略的.artifacts，不能算作已验证产品代码。当前生产及开发依赖恢复原来的精简配置。
+
+正常重启后官方客户端状态就绪。用户提供两条基础库脚本500；最小无业务项目亦空白。读取非敏感工具故障日志确认3.17.4包下载校验成功，但重命名EXDEV失败；内置devtools组件复制也EXDEV失败。已从腾讯原地址取得41072215字节包，复制一致性SHA256=68EC2277BF53633CAB84DD7F4DA23707E3D9C3FF5EBEB2CC42D0C20E7F52648B；从只读安装包提取3个组件并按包内SHA256逐文件校验，补齐正常缓存。没有修改安装文件或读取令牌。首页、页面上下文及元素驱动恢复。
+
+发现默认.runtime/uploads导致sendFile隐藏目录规则拦截；集成测试使用同样路径先失败500!=200，再仅在鉴权后的媒体路由允许dotfiles，8组集成、11单元、类型/构建、8WXML/9WXSS复验通过。独立审查确认无Critical/Important。隔离_test库原生九步完整流程全部通过、未处理异常0；相册回调使用虚构图片，实际图像读取上传及业务接口均真实。验收脚本整理为scripts/simulator-smoke.mjs与simulator-database.ts；可选SDK仅安装.tools/automator。已恢复演示库后端PID34740。
+
+用户追加界面美化，并确认校园绿色集市方案；再次明确必须先完成原有全部任务，再美化。目前尚未开始修改外观，先完成本次修复、文档和GitHub同步。

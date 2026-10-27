@@ -16,7 +16,7 @@ config.wechatAppSecret = '';
 assert.match(process.env.TEST_DB_NAME || '', /^[a-zA-Z0-9_]+_test$/);
 config.database = process.env.TEST_DB_NAME!;
 const pool = createPool(config);
-let server: Server, base: string, uploadDir: string;
+let server: Server, base: string, uploadDir: string, testRoot: string;
 const tokens: Record<string, string> = {};
 const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=';
 async function api(path: string, options: {
@@ -50,7 +50,9 @@ async function auditCertification(cid: string, action: string, reason = '') {
 }
 const product = (imageId: string, title = '全新测试教材') => ({ title, description: '干净整洁，校内交接', priceCents: 2500, categoryId: '1', condition: 'GOOD', imageIds: [imageId] });
 before(async () => {
-    uploadDir = await mkdtemp(join(tmpdir(), 'campus-market-test-'));
+    testRoot = await mkdtemp(join(tmpdir(), 'campus-market-test-'));
+    // 与默认部署的 .runtime/uploads 一致，覆盖隐藏目录中的媒体读取。
+    uploadDir = join(testRoot, '.runtime', 'uploads');
     config.uploadDir = uploadDir;
     await migrate(pool);
     // 只重置明确命名的独立测试库；演示库与组员数据库不能进入此路径。
@@ -77,8 +79,8 @@ before(async () => {
 after(async () => { if (server) {
     server.closeAllConnections();
     await new Promise<void>(resolve => server.close(() => resolve()));
-} await pool.end(); if (uploadDir)
-    await rm(uploadDir, { recursive: true, force: true }); });
+} await pool.end(); if (testRoot)
+    await rm(testRoot, { recursive: true, force: true }); });
 test('TC-USER：真实数据库健康检查、登录失败、令牌过期及注销', async () => {
     assert.equal((await api('/api/health')).status, 200);
     assert.equal((await api('/api/users/me')).status, 401);

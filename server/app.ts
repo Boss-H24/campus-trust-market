@@ -62,7 +62,8 @@ export function createApp(config: Config, pool: Pool) {
     app.post('/api/admin/certifications/:id/audit', auth, admin, async (req, res) => ok(req, res, await users.auditCertification(req.actor!, String(req.params.id), req.body || {})));
     app.get('/api/categories', async (req, res) => ok(req, res, { items: await rows(pool, 'SELECT id,name FROM category WHERE active=1 ORDER BY id') }));
     app.post('/api/uploads', auth, rate('upload', 60), async (req, res) => ok(req, res, await products.upload(req.actor!, req.body || {}), 201));
-    app.get('/api/media/:id', async (req, res, next) => { const asset = await products.media(String(req.params.id), req.actor); res.type(asset.contentType).sendFile(asset.path, error => { if (error)
+    // 路径由已鉴权的数据库资产记录决定；允许默认 .runtime 上传目录。
+    app.get('/api/media/:id', async (req, res, next) => { const asset = await products.media(String(req.params.id), req.actor); res.type(asset.contentType).sendFile(asset.path, { dotfiles: 'allow' }, error => { if (error)
         next(error); }); });
     app.get('/api/products', async (req, res) => ok(req, res, await products.list(req.query, req.actor)));
     app.get('/api/admin/products', auth, admin, async (req, res) => ok(req, res, await products.list({ ...req.query, scope: 'admin' }, req.actor)));

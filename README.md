@@ -4,7 +4,7 @@
 
 当前交付是**成员 A 的可运行增量**：登录、学生认证、人工审核、商品发布检索、上下架、隐私保护与测试。订单、模拟支付、评价信誉、咨询和举报由 B/C 继续实现，当前界面不会伪造这些功能已完成。
 
-验收状态：后端业务测试、官方WXML/WXSS编译和远端CI已通过；首次真实模拟器运行出现首页空白及两条运行错误，正在等待开发工具对Codex客户端授权后读取日志定位。界面流程尚未验收，课堂展示前需完成此项。
+验收状态：后端业务测试、官方WXML/WXSS编译和真实模拟器九步完整流程已通过。首次空白由开发工具基础库缓存移动失败引起，现已恢复；默认隐藏上传目录中的图片访问也已补回归并修复。真机及微信平台真实登录的联调状态单列于测试报告。
 
 ## 快速运行 Windows
 
@@ -28,7 +28,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
 3. 保持后端启动，在“我的”中选择“课堂演示登录”，输入 `.env` 中的 `DEMO_PASSWORD`。
 4. 真机不能访问电脑的 `127.0.0.1`。真机联调时把 `miniprogram/config.js` 改为电脑局域网地址，同时修改 `.env` 的 `HOST`，配置网络访问。上线使用 HTTPS 和已登记域名。
 
-真实微信登录：配置服务端 `.env` 中的 `WECHAT_APP_ID`、`WECHAT_APP_SECRET`，以及小程序 `project.config.json` 中的同一个 AppID。密钥只放服务端；`session_key` 不返回客户端。`NODE_ENV=production` 强制禁用演示登录并要求微信配置。本项目尚未使用真实 AppID 联调。
+真实微信登录：配置服务端 `.env` 中的 `WECHAT_APP_ID`、`WECHAT_APP_SECRET`，以及小程序 `project.config.json` 中的同一个 AppID。密钥只放服务端；`session_key` 不返回客户端。`NODE_ENV=production` 强制禁用演示登录并要求微信配置。当前已配置测试号 AppID，AppSecret 尚未配置，平台真实登录未验收。
 
 ## 演示身份
 
@@ -57,6 +57,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
 ```
 
 数据库初始化：`scripts/npm.ps1 run db:migrate`、`scripts/npm.ps1 run db:seed`。独立测试库为 `campus_market_test`，集成测试只重置该库；不会清空 `campus_market`。停止便携数据库执行 `scripts/stop-db.ps1`，先退出后端进程。
+
+原生模拟器自动验收另见 [测试报告](docs/test-report.md#原生模拟器流程复验)。可选工具 SDK 安装到忽略的 `.tools/automator`，不加入应用依赖；脚本使用真实页面、接口和 MySQL，仅为相册选择器提供虚构图片。
 
 ## 协作文档
 
