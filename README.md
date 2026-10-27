@@ -8,6 +8,8 @@
 
 界面预览：[校园首页](docs/images/home.jpg)、[商品详情](docs/images/detail.png)。图片来自真实开发者工具，商品与学生身份均为虚构演示数据。
 
+独立内容补充：[四件商品摄影样图与来源](assets/demo-products/README.md)、[上传后的首页](assets/demo-products/preview.jpg)。样图已在本机通过正常上传和审核流程配置；新机器可在编辑页面选择该目录图片，不会由seed自动覆盖组员数据。
+
 ## 快速运行 Windows
 
 在项目根目录打开 PowerShell：
