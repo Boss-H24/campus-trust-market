@@ -31,3 +31,5 @@ GitHub私有仓库已通过正常网页登录创建：https://github.com/Boss-H2
 用户追加界面美化，并确认校园绿色集市方案；再次明确必须先完成原有全部任务，再美化。目前尚未开始修改外观，先完成本次修复、文档和GitHub同步。
 
 原任务修复26341e3已同步main，远端GitHub Actions第3次运行实际通过（1分2秒）。之后才创建feature/interface-polish：统一原生样式，首页书本插画/搜索栏/商品卡片，优化详情、表单、个人页和审核页。保持原业务JS/接口不变。类型/构建、11项测试、8WXML/9WXSS通过；仓库正式原生验收脚本九步复跑通过、未处理异常0。独立静态复核无Critical/Important。已保存真实虚构数据截图到docs/images并恢复演示后端，下一步推送分支、建PR并核对CI。
+
+美化提交d810ac7已推送，PR https://github.com/Boss-H24/campus-trust-market/pull/1 已通过正常网页登录创建，验收说明已保存并重新读取核实；实际显示All checks have passed、2 successful checks。保留PR供小组另一成员复核后合入，本地当前分支为美化版，演示服务PID17760、健康与图片读取200。原任务先完成再美化的顺序已落实。
