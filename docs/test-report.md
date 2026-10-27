@@ -69,7 +69,7 @@ MySQL Windows中文路径通过用户本地应用目录下专用ASCII junction�
 - [x] 完整小程序UI演示：登录→实名→审核→发布→商品审核→检索→编辑重审→下架。
 - [ ] 真机：图片选择、压缩上传、预览、断网和重新登录。
 - [ ] 微信平台：配置实际AppID/AppSecret后验证wx.login及服务端code2Session。
-- [x] GitHub Actions：包含隐藏目录图片回归的26341e3远端工作流显示completed successfully，耗时1分2秒。
+- [x] GitHub Actions：最终实现e7fe066已推送，PR #1实际显示All checks have passed、2 successful checks；覆盖类型、构建、单元、MySQL初始化/集成及性能。
 
 安装包已按用户要求打开，安装位置由用户选择；官方测试号扫码入口为 https://mp.weixin.qq.com/wxamp/sandbox。以上项目未完成前保持未勾选，不以本地静态检查或接口测试替代。
 
