@@ -19,3 +19,7 @@ GitHub私有仓库已通过正常网页登录创建：https://github.com/Boss-H2
 用户已安装开发者工具到E:/Apps/微信web开发者工具，主界面“项目列表”已打开。官方CLI因服务端口关闭不能自动导入，已异步请求用户开启。已找到工具内官方wcc/wcsc并直接验证：先观察WXML实体转义编译失败，再修复表达式，8页WXML与9份WXSS均原生编译通过；新增scripts/check-native.ps1可复验。后端已在127.0.0.1:3000启动（PID16508），健康检查实际返回MySQL正常。GitHub OAuth授权页已通过正常GCM“Sign in with your browser”按钮打开，等待用户确认，未代点授权。
 
 后续提交d8b8f0c包含原生编译修复和测试号配置。官方测试号页面有AppSecret标签，但当前界面未取得可用的已显示密钥值；本地WECHAT_APP_SECRET保持空，不重置凭据。剩余外部动作：GitHub OAuth用户确认、开发者工具服务端口开启/手动导入、随后完整UI验收与真实微信登录。远端仓库当前已建但代码未上传，不能标记远端交付或CI成功。
+
+用户确认Git已连接、服务端口已开。正常推送成功，随后通过现有127.0.0.1:7897代理核对远端main=本地cb92970，GitHub Actions实际显示completed successfully。官方CLI已导入项目；自动化9420已启用、Tool.getInfo返回基础库3.17.4。真实模拟器导航栏/TabBar可见但首页空白，调试器2错1警告；App.getCurrentPage超时，不能声称UI通过。
+
+已发现并读取安装包自带wechatide-skill0.3.11及debugger场景；安装检查compatible=true。check_wechatide_status自动发起Codex客户端授权但超时，单独auth也超时；已异步请求用户确认或复制Console原文。未读取/猜测CLI/MCP Token、未自授权。Windows防火墙放行弹窗已通过正常关闭请求取消，不新增放行规则。尝试官方automator客户端只做调试，后将其76个传递依赖从发布依赖中移除；候选原生流程脚本保存到忽略的.artifacts，不能算作已验证产品代码。当前生产及开发依赖恢复原来的精简配置。

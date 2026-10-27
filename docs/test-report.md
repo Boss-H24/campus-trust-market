@@ -64,11 +64,13 @@ MySQL Windows中文路径通过用户本地应用目录下专用ASCII junction�
 - [ ] 完整小程序UI演示：登录→实名→审核→发布→商品审核→检索→编辑重审→下架。
 - [ ] 真机：图片选择、压缩上传、预览、断网和重新登录。
 - [ ] 微信平台：配置实际AppID/AppSecret后验证wx.login及服务端code2Session。
-- [ ] GitHub Actions：远端首次工作流运行结果。
+- [x] GitHub Actions：cb92970对应的首次远端工作流显示completed successfully。
 
 安装包已按用户要求打开，安装位置由用户选择；官方测试号扫码入口为 https://mp.weixin.qq.com/wxamp/sandbox。以上项目未完成前保持未勾选，不以本地静态检查或接口测试替代。
 
 已从本组官方测试号页面取得AppID `wx586d8f7c807a2c06` 并配置到项目；尚未因此宣称微信登录已联调成功。自动化集成测试会显式隔离本机真实微信配置，避免使用真实密钥请求外部接口。
+
+真实界面首检：已使用官方CLI导入项目并启用自动化，基础库3.17.4。模拟器显示导航栏与TabBar，但首页内容空白，调试器显示2条错误、1条警告；App.getCurrentPage因运行时未就绪而超时。未将此结果标记为通过。工具自带wechatide-skill诊断入口需要Codex客户端单独授权，当前等待用户确认，之后读取Console原文定位。界面截图及候选验收脚本保存在忽略的.artifacts目录，不作为已通过的测试交付。
 
 ## 重现命令
 
