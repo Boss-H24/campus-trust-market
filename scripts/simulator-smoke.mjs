@@ -55,10 +55,10 @@ try{
     const photo=await mp.evaluate(base64=>{const path=wx.env.USER_DATA_PATH+'/simulator-course-cover.png';wx.getFileSystemManager().writeFileSync(path,base64,'base64');return path;},makeCover(0).toString('base64'));
     await mp.mockWxMethod('chooseImage',{tempFilePaths:[photo],tempFiles:[{path:photo,size:makeCover(0).length}]});
     await tap(page,'.add-photo');await until(async()=>{const data=await page.data();return data.images.length===1&&!data.uploading;},'图片上传失败');await mp.restoreWxMethod('chooseImage');
-    await fill(page,'title',title);await fill(page,'price','12.30');await fill(page,'description','软件工程课程教材，内页整洁，可在校内交接。');await tap(page,'button.primary');
+    await fill(page,'title',title);await fill(page,'price','12.30');await fill(page,'description','软件工程课程教材，内页整洁，可在校内交接。');await mp.screenshot({path:'.artifacts/simulator-publish.png'});await tap(page,'button.primary');
     const detail=await pageAt('pages/detail/detail');await until(async()=>!!(await detail.data()).product,'商品详情未加载');const product=(await detail.data()).product;assert.equal(product.status,'PENDING');assert.equal(product.priceCents,1230);productId=product.id;await mp.screenshot({path:'.artifacts/simulator-pending.png'});
   });
-  await record('管理员从真实页面审核商品上架',async()=>{const page=await openAdmin('products');assert.equal((await page.data()).items[0].id,productId);await tap(page,'.actions button.primary');await until(async()=>!(await page.data()).items.length,'商品审核失败');});
+  await record('管理员从真实页面审核商品上架',async()=>{const page=await openAdmin('products');assert.equal((await page.data()).items[0].id,productId);await mp.screenshot({path:'.artifacts/simulator-admin.png'});await tap(page,'.actions button.primary');await until(async()=>!(await page.data()).items.length,'商品审核失败');});
   await record('公开搜索、详情与卖家隐私脱敏',async()=>{
     const profile=await login(1);await tap(profile,'button.secondary');const page=await mp.switchTab('/pages/home/home');await (await page.$('.search-row input')).input(title);await tap(page,'.search-row button');await until(async()=>{const data=await page.data();return !data.loading&&data.items.length===1&&data.items[0].id===productId;},'搜索未返回已上架商品');await tap(page,'.product');const detail=await pageAt('pages/detail/detail');await until(async()=>!!(await detail.data()).product,'详情加载失败');const seller=(await detail.data()).product.seller;assert.equal(seller.maskedPhone,'138****0004');assert.equal(seller.studentId,undefined);await mp.screenshot({path:'.artifacts/simulator-public-detail.png'});
   });

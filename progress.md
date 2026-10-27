@@ -29,3 +29,5 @@ GitHub私有仓库已通过正常网页登录创建：https://github.com/Boss-H2
 发现默认.runtime/uploads导致sendFile隐藏目录规则拦截；集成测试使用同样路径先失败500!=200，再仅在鉴权后的媒体路由允许dotfiles，8组集成、11单元、类型/构建、8WXML/9WXSS复验通过。独立审查确认无Critical/Important。隔离_test库原生九步完整流程全部通过、未处理异常0；相册回调使用虚构图片，实际图像读取上传及业务接口均真实。验收脚本整理为scripts/simulator-smoke.mjs与simulator-database.ts；可选SDK仅安装.tools/automator。已恢复演示库后端PID34740。
 
 用户追加界面美化，并确认校园绿色集市方案；再次明确必须先完成原有全部任务，再美化。目前尚未开始修改外观，先完成本次修复、文档和GitHub同步。
+
+原任务修复26341e3已同步main，远端GitHub Actions第3次运行实际通过（1分2秒）。之后才创建feature/interface-polish：统一原生样式，首页书本插画/搜索栏/商品卡片，优化详情、表单、个人页和审核页。保持原业务JS/接口不变。类型/构建、11项测试、8WXML/9WXSS通过；仓库正式原生验收脚本九步复跑通过、未处理异常0。独立静态复核无Critical/Important。已保存真实虚构数据截图到docs/images并恢复演示后端，下一步推送分支、建PR并核对CI。

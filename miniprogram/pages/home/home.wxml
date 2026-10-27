@@ -1,10 +1,16 @@
-<view class="page">
-  <view class="welcome"><view class="title"><view>闲置有去处，</view><view>校园有好物。</view></view><view class="subtitle">学生实名审核，让每一次转让更安心</view><view class="campus-mark">校园拾集</view></view>
-  <view class="search-row"><input placeholder="搜索教材、数码、生活好物" value="{{keyword}}" data-field="keyword" bindinput="input" bindconfirm="search" confirm-type="search"/><button class="primary small" bindtap="search">搜索</button></view>
+<view class="page home-page">
+  <view class="welcome">
+    <view class="hero-copy"><view class="title">闲置有去处，<view>校园有好物。</view></view><view class="subtitle">让好物，在同学之间继续发光</view></view>
+    <view class="hero-art"><view class="art-disc"></view><view class="art-book back-book"></view><view class="art-book front-book"><view class="book-line"></view><view class="book-line short"></view><text>拾集</text></view><view class="art-leaf"></view></view>
+  </view>
+  <view class="trust-strip"><text>✓ 学生实名</text><text>✓ 商品审核</text><text>✓ 隐私保护</text></view>
+  <view class="search-row"><view class="search-icon"></view><input placeholder="搜教材、数码、生活好物" value="{{keyword}}" data-field="keyword" bindinput="input" bindconfirm="search" confirm-type="search"/><button class="primary small" bindtap="search">搜索</button></view>
   <scroll-view scroll-x class="categories"><view class="category {{categoryId === '' ? 'selected' : ''}}" data-id="" bindtap="chooseCategory">全部</view><view wx:for="{{categories}}" wx:key="id" class="category {{categoryId === item.id ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="chooseCategory">{{item.name}}</view></scroll-view>
-  <view class="row section"><view class="section-title">正在转让 <text class="muted">{{total}} 件</text></view><text class="filter-link" bindtap="toggleFilters">价格筛选</text></view>
-  <view wx:if="{{showFilters}}" class="panel row"><input class="grow" type="digit" placeholder="最低价（元）" value="{{minPrice}}" data-field="minPrice" bindinput="input"/><text>至</text><input class="grow" type="digit" placeholder="最高价（元）" value="{{maxPrice}}" data-field="maxPrice" bindinput="input"/><button class="secondary small" bindtap="search">筛选</button></view>
+  <view class="row section list-heading"><view class="section-title">校园好物 <text class="muted">{{total}} 件正在转让</text></view><text class="filter-link" bindtap="toggleFilters">价格筛选</text></view>
+  <view wx:if="{{showFilters}}" class="panel row price-filter"><input class="grow" type="digit" placeholder="最低价（元）" value="{{minPrice}}" data-field="minPrice" bindinput="input"/><text>至</text><input class="grow" type="digit" placeholder="最高价（元）" value="{{maxPrice}}" data-field="maxPrice" bindinput="input"/><button class="secondary small" bindtap="search">筛选</button></view>
   <view wx:if="{{error}}" class="error" bindtap="search">{{error}}，点击重试</view>
-  <view class="product-grid"><view wx:for="{{items}}" wx:key="id" class="product" data-id="{{item.id}}" bindtap="open"><image wx:if="{{item.cover}}" src="{{item.cover}}" mode="aspectFill" class="cover"/><view wx:else class="cover placeholder">校园好物</view><view class="product-copy"><view class="product-title">{{item.title}}</view><view class="row"><text class="price">¥{{item.priceText}}</text><text class="muted">校内转让</text></view></view></view></view>
-  <view wx:if="{{!loading && !items.length && !error}}" class="empty">暂时没有找到好物，换个关键词试试</view><view wx:if="{{loading}}" class="empty">正在找好物…</view><view wx:if="{{items.length && items.length === total}}" class="end-note">好物会继续更新，下次再来逛逛</view>
+  <view class="product-grid"><view wx:for="{{items}}" wx:key="id" class="product" data-id="{{item.id}}" bindtap="open"><view class="cover-wrap"><image wx:if="{{item.cover}}" src="{{item.cover}}" mode="aspectFill" class="cover"/><view wx:else class="cover placeholder">校园好物</view><text class="campus-tag">校内转让</text></view><view class="product-copy"><view class="product-title">{{item.title}}</view><view class="row"><text class="price"><text class="currency">¥</text>{{item.priceText}}</text><text class="item-note">闲置新旅程</text></view></view></view></view>
+  <view wx:if="{{loading}}" class="end-note">正在寻找校园好物…</view>
+  <view wx:elif="{{!items.length && !error}}" class="empty"><view class="empty-symbol">拾</view><view>暂时没有找到这件好物</view><text class="muted">换个关键词，或试试其他分类</text></view>
+  <view wx:elif="{{items.length >= total}}" class="end-note">好物不闲置，校园有回响</view>
 </view>
