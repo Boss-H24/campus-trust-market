@@ -1,0 +1,60 @@
+{
+  "codeBaseline": "c16e38e",
+  "note": "截图原图复制；代码说明图不是运行截图。图中学生与商品为虚构数据。",
+  "assets": [
+    {
+      "file": "01-home.jpg",
+      "kind": "native-screenshot",
+      "description": "演示库首页",
+      "verifiedDate": "2026-10-28",
+      "sha256": "4412be0a49fee2f6958e61a3618fc2f5291d9f8d3990f3ed2e23ec9bdbbd7b9b",
+      "originalScreenshot": "docs/images/home.jpg",
+      "altered": false
+    },
+    {
+      "file": "02-detail.png",
+      "kind": "native-screenshot",
+      "description": "演示库商品详情",
+      "verifiedDate": "2026-10-28",
+      "sha256": "9a59fc1f41e3c08a5a9a3b5587cbf2a67dafcd8f81f8c58a55ba9ced57aff205",
+      "originalScreenshot": "docs/images/detail.png",
+      "altered": false
+    },
+    {
+      "file": "03-publish.png",
+      "kind": "native-screenshot",
+      "description": "隔离测试库发布表单",
+      "verifiedDate": "2026-10-28",
+      "sha256": "de97cdea1c1f48e6ecbdef655e39b6fbe382114f644b4ff38df74c30e51c4d36",
+      "originalScreenshot": ".artifacts/simulator-publish.png",
+      "altered": false
+    },
+    {
+      "file": "04-review.png",
+      "kind": "native-screenshot",
+      "description": "隔离测试库管理员商品队列",
+      "verifiedDate": "2026-10-28",
+      "sha256": "689dfde7cb8bc5198b302f479c1ab6ccb6aa4c0ae630dfc48ef4c55a9db7a214",
+      "originalScreenshot": ".artifacts/simulator-admin.png",
+      "altered": false
+    },
+    {
+      "file": "05-architecture.png",
+      "kind": "code-derived-diagram",
+      "description": "依据工程分层绘制",
+      "verifiedDate": "2026-10-28",
+      "sha256": "9aa9934f002a1d991ca0fde10c940a6ea2c49478801fe80aaef4ee2ce89f0255",
+      "originalScreenshot": null,
+      "altered": null
+    },
+    {
+      "file": "06-certification-flow.png",
+      "kind": "code-derived-diagram",
+      "description": "依据认证流程绘制",
+      "verifiedDate": "2026-10-28",
+      "sha256": "4b60eadf55eb4ef28d720da327e5b0607c657712798ac7afc2da92964c5b0eb5",
+      "originalScreenshot": null,
+      "altered": null
+    }
+  ]
+}

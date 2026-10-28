@@ -76,5 +76,6 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
 - [OpenAPI 接口契约](docs/openapi.json)
 - [测试记录与人工验收单](docs/test-report.md)
 - [课堂演示步骤与讲解](docs/classroom-demo.md)
+- [第三部分软件实现Word报告及PPT素材](docs/implementation-report/README.md)
 
 技术：Node 24 LTS、TypeScript、Express 5、MySQL2、MySQL 8.4；后端 Controller → Service → Repository。公共接口返回 `{code,message,data,requestId}`；金额采用整数分，数据库 bigint 编号以字符串传输。

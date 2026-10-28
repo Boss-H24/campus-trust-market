@@ -8,6 +8,8 @@
 
 固定交接快照：[member-a-20261028 源码ZIP](https://github.com/Boss-H24/campus-trust-market/archive/refs/tags/member-a-20261028.zip)。私有仓库下载需先登录获邀账号。该快照供验收留档，后续协作继续使用Git分支，避免相互覆盖文件。
 
+后补的[第三部分软件实现报告及PPT素材](../implementation-report/README.md)随当前分支提供；含报告的完整交接快照为[member-a-report-20261028](https://github.com/Boss-H24/campus-trust-market/archive/refs/tags/member-a-report-20261028.zip)，保留原代码快照不变。
+
 可运行性检查：启动后端→`http://127.0.0.1:3000/api/health`→开发者工具导入`miniprogram`→匿名查看四件摄影样图商品→演示卖家登录→“我的商品”。密码从自己电脑生成的`.env`读取。
 
 ## 包内资料
