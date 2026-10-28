@@ -2,6 +2,23 @@
 
 高校二手物品可信交易小程序，《软件工程基础》课程设计。
 
+## 报告与小组协作入口
+
+**第三部分的 Word 实现报告、在线正文和 PPT 素材都已上传 GitHub，从下表直接进入。**
+
+| 资料 | 入口 |
+|---|---|
+| 软件实现报告 Word 文档 | [第三部分软件实现报告.docx](https://github.com/Boss-H24/campus-trust-market/blob/feature/interface-polish/docs/implementation-report/第三部分软件实现报告.docx) |
+| 报告在线正文 | [直接在 GitHub 阅读](https://github.com/Boss-H24/campus-trust-market/blob/feature/interface-polish/docs/implementation-report/实现报告正文.md) |
+| PPT 截图与讲解提纲 | [图片、流程图及逐页讲解](https://github.com/Boss-H24/campus-trust-market/tree/feature/interface-polish/docs/implementation-report/ppt-assets) |
+| 三人任务规划 | [A/B/C 分工和任务认领](https://github.com/Boss-H24/campus-trust-market/blob/feature/interface-polish/docs/tasks.md) |
+| 其他成员接入交接 | [B/C 从这里开始](https://github.com/Boss-H24/campus-trust-market/tree/feature/interface-polish/docs/handoff) |
+| 完整工程与协作规则 | [当前完整代码](https://github.com/Boss-H24/campus-trust-market/tree/feature/interface-polish) · [分支和 PR 约定](https://github.com/Boss-H24/campus-trust-market/blob/feature/interface-polish/CONTRIBUTING.md) |
+
+当前完整增量位于 `feature/interface-polish`，默认 `main` 保留基础版本；[PR #1](https://github.com/Boss-H24/campus-trust-market/pull/1)由另一位组员复核后合入。上表使用完整分支链接，从仓库默认首页也能直接找到文档。
+
+**加入协作：**本仓库为私有仓库。尚未获邀的组员可先把自己的 GitHub **个人主页链接或邮箱**发给仓库负责人，由负责人邀请；接受邀请后即可查看全部资料并共同开发。个人主页地址包含账号标识，不必事先知道或另查用户名。GitHub 个人私有仓库采用[指定账号或邮箱邀请](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/repository-access-and-collaboration/inviting-collaborators-to-a-personal-repository)，没有面向未授权访客的公开申请加入入口。
+
 当前交付是**成员 A 的可运行增量**：登录、学生认证、人工审核、商品发布检索、上下架、隐私保护与测试。订单、模拟支付、评价信誉、咨询和举报由 B/C 继续实现，当前界面不会伪造这些功能已完成。
 
 验收状态：后端业务测试、官方WXML/WXSS编译和真实模拟器九步完整流程已通过。首次空白由开发工具基础库缓存移动失败引起，现已恢复；默认隐藏上传目录中的图片访问也已补回归并修复。真机及微信平台真实登录的联调状态单列于测试报告。
