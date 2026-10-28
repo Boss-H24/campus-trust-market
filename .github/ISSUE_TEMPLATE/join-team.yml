@@ -1,0 +1,32 @@
+name: 申请加入课程小组
+description: 小组成员在此申请协作，负责人可直接看到你的 GitHub 账号
+title: 申请加入小组
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎加入校园拾集课程项目。提交后，负责人会从 Issue 作者获取你的 GitHub 账号，核对小组身份后邀请你协作。
+        请只填写群内昵称或分工代号，不要填写学号、手机号、密码等信息。此申请公开可见。
+  - type: input
+    id: group_name
+    attributes:
+      label: 群内昵称或小组代号
+      description: 方便负责人在课程小组中确认身份，不需要填写 GitHub 用户名。
+      placeholder: 例如 B 或群内昵称
+    validations:
+      required: true
+  - type: dropdown
+    id: role
+    attributes:
+      label: 计划负责的任务
+      options:
+        - 成员 B 交易 订单 评价与信誉
+        - 成员 C 咨询 收藏 举报与监管
+        - 其他协作任务
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: 补充说明
+      description: 可说明正在认领的任务或需要的接入帮助。
