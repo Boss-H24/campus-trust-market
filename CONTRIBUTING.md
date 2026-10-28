@@ -4,7 +4,7 @@
 
 ## 仓库入口
 
-私有仓库：[Boss-H24/campus-trust-market](https://github.com/Boss-H24/campus-trust-market)。需要仓库拥有者邀请另外两位真实GitHub用户名后才能访问。当前最新交付在 `feature/interface-polish`（[PR #1](https://github.com/Boss-H24/campus-trust-market/pull/1)），`main`为已验收的基础版。PR由另一位同学复核后合入。
+公开仓库：[Boss-H24/campus-trust-market](https://github.com/Boss-H24/campus-trust-market)，代码和文档均可直接阅读。小组同学登录GitHub后填写[加入申请](https://github.com/Boss-H24/campus-trust-market/issues/new?template=join-team.yml)，负责人会从申请作者识别账号、核对身份后邀请协作；无需另填用户名。接受邀请后可推送自己的分支，也可通过Fork和PR贡献。当前最新交付在 `feature/interface-polish`（[PR #1](https://github.com/Boss-H24/campus-trust-market/pull/1)），`main`为已验收的基础版。PR由另一位同学复核后合入。
 
 | 目录 | 用途及负责人 |
 |---|---|

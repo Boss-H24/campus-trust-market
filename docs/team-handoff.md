@@ -83,4 +83,4 @@ C 新增 `conversation`、`chat_message`、`favorite`、`report`、`platform_rul
 3. 改动自己的模块；公共状态和接口变更先讨论。PR 通过 CI 并由另一位同学复核后合入。
 4. 集成后按课堂脚本完整排练；最终测试人员补充 B/C 全流程及安全专项测试。
 
-仓库先使用 A/B/C 标识。项目拥有者在 GitHub Settings → Collaborators 中添加另外两位的实际 GitHub 用户名；不要共享账号或个人密钥。
+仓库先使用 A/B/C 标识，现为公开项目。组员可填写[加入申请](https://github.com/Boss-H24/campus-trust-market/issues/new?template=join-team.yml)，负责人从Issue作者取得GitHub账号并核对小组身份，再在Settings → Collaborators中邀请。接受邀请后可推送个人分支；不要共享账号或个人密钥。

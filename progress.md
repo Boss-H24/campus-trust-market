@@ -45,3 +45,5 @@ GitHub私有仓库已通过正常网页登录创建：https://github.com/Boss-H2
 c16e38e文档收尾已推送并固定member-a-20261028，远端标签解引用与本地HEAD一致，GitHub交接目录实际可见。该提交Actions页面verify succeeded in 50s。源码ZIP共137项、791238字节，必需文件齐全、无.env/运行目录/工具依赖，SHA256 fd9a0ab219d683887265e5e5f1430827fd880a0aab6da3e66d2dba9ed21e05d2。
 
 用户追加第三部分实现报告和PPT截图，并指定全部黑色宋体、舒适行距、规范格式。只读审计两份参考DOCX，采用设计文档A4与约2.5cm边距；用户宋体要求覆盖原黑体标题。使用Codex primary runtime Python/docx与本机独立隐藏Word COM导出；技能render_docx.py因Windows无LibreOffice的诊断已确认，任务内适配Word PDF后复用其Poppler光栅化流程，未安装新应用或修改技能包。排除空白页/孤表行/单字余行后最终9页，正文12pt/1.5行，193段文字run均宋体/000000，6表/6图素材；最终9页已逐页查看，前5页像素等同已检查版。4张截图与来源SHA逐一一致，原两份DOCX摘要保持未变。Word、可读正文、逐图来源与6页讲解提纲在docs/implementation-report，单独报告素材ZIP已生成，准备同步报告快照。
+
+2026-10-29：用户指出默认首页找不到Word报告，已将报告、在线正文、PPT、分工和交接直接放在main开头（9ea3825），并同步完整分支，实际首页已读取确认。用户随后多次明确授权公开课程仓库。先确认Git历史无.env/运行目录/工具或私钥路径，再在GitHub正常设置页完成公开；匿名API返回private:false、visibility:public，网页也显示currently public。默认main增加join-team.yml及公开首页申请链接（79ff73c），实际新建Issue页面正常渲染昵称/任务/说明三个字段；未提交测试申请、未邀请未知用户。申请作者自动提供GitHub账号，负责人核对后手工授予协作权限。活跃交接和演示文案同步公开状态，固定历史快照不改写。

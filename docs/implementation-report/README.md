@@ -4,6 +4,8 @@
 
 报告承接原需求和设计，依据成员A实际实现与验收编写。说明工程、认证、商品、隐私并发、测试、部署及交接；明确B/C尚未实现和真实微信平台待联调的边界。代码基线为`c16e38e`。
 
+2026-10-29协作更新：仓库已按小组要求公开，报告和素材可直接访问。小组同学可通过[申请入口](https://github.com/Boss-H24/campus-trust-market/issues/new?template=join-team.yml)申请写入协作，报告的代码基线和原验收记录保持不变。
+
 - [GitHub可阅读正文](实现报告正文.md)
 - [PPT素材与6页讲解提纲](ppt-assets/README.md)
 - [测试报告](../test-report.md)
