@@ -1,6 +1,6 @@
 # 三人实施任务规划
 
-状态基线：2026-10-28。A已交付；B/C待认领，暂未取得用户名。勾选表示已完成实现和对应验证；组员将`负责人`改为自己的GitHub用户名。
+状态更新：2026-10-29。A已交付；B/C已提交认领申请，两份协作邀请均已发出，等待各自接受。勾选表示已完成实现和对应验证，不表示仅已认领。
 
 ## A：公共工程、用户与商品
 
@@ -16,7 +16,7 @@
 
 ## B：交易与评价信誉
 
-负责人：B（待认领）；分支`feature/orders-credit`；[接入步骤](handoff/member-b.md)。
+申请认领：cxl，GitHub [@continuetosuccess](https://github.com/continuetosuccess)，[申请 #3](https://github.com/Boss-H24/campus-trust-market/issues/3)；分支`feature/orders-credit`；[接入步骤](handoff/member-b.md)。
 
 - [ ] B-01 对照详细设计补订单、状态日志、评价、信誉事件迁移；核对索引、金额整数分和版本。
 - [ ] B-02 下单事务、条件锁商品、禁止自购、双方认证/禁用检查、请求幂等及有效订单唯一约束。
@@ -28,7 +28,7 @@
 
 ## C：咨询与监管
 
-负责人：C（待认领）；分支`feature/chat-reports`；[接入步骤](handoff/member-c.md)。
+申请认领：yjj，GitHub [@yanjason179-jpg](https://github.com/yanjason179-jpg)，[申请 #4](https://github.com/Boss-H24/campus-trust-market/issues/4)；分支`feature/chat-reports`；[接入步骤](handoff/member-c.md)。
 
 - [ ] C-01 会话、消息、收藏、举报、平台规则迁移；消息与收藏幂等约束。
 - [ ] C-02 咨询页面与增量消息接口；只允许参与者访问，退出页停止轮询，拦截联系方式。
