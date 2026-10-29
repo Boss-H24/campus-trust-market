@@ -5,5 +5,15 @@ const actual=[...source.matchAll(/app\.(get|post|put|patch|delete)\(\s*['"]([^'"
 const declared=Object.entries(api.paths).flatMap(([path,operations])=>Object.keys(operations).map(method=>method+' '+path));
 for(const route of actual)if(!declared.includes(route))throw new Error('接口未记录到OpenAPI：'+route);
 for(const route of declared)if(!actual.includes(route))throw new Error('OpenAPI包含未实现接口：'+route);
+for(const route of [
+    'post /api/orders',
+    'get /api/orders',
+    'get /api/orders/{orderNo}',
+    'post /api/orders/{orderNo}/pay',
+    'put /api/orders/{orderNo}/status',
+    'post /api/orders/{orderNo}/confirm',
+    'post /api/orders/{orderNo}/evaluations',
+    'get /api/users/{id}/evaluations'
+])if(!declared.includes(route))throw new Error('缺少成员B接口：'+route);
 function check(value){if(!value||typeof value!=='object')return;if(value.$ref&&!api.components.schemas[value.$ref.split('/').pop()])throw new Error('未定义Schema：'+value.$ref);for(const child of Object.values(value))check(child);}
 check(api);console.log(`接口契约检查通过：${actual.length}个已实现操作，引用均存在。`);

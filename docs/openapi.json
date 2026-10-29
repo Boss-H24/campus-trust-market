@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "校园拾集 成员A接口",
-    "version": "0.1.0",
-    "description": "已实现接口。B/C待实现契约见team-handoff.md。编号为字符串，金额为整数分。未认证可公开浏览，发布需实名认证且信誉≥60。"
+    "title": "校园拾集接口",
+    "version": "0.2.0",
+    "description": "成员A用户与商品、成员B订单与评价信誉已实现。C功能待实现。编号为字符串，金额为整数分。未认证可公开浏览，发布需实名认证且信誉≥60。"
   },
   "servers": [
     {
@@ -1559,6 +1559,614 @@
           }
         }
       }
+    },
+    "/api/orders": {
+      "post": {
+        "summary": "买家在事务中锁定上架商品并创建订单",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/OrderDetail"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "requestId"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "失败；使用HTTP状态码400/401/403/404/409/413/429/500/502/503。code为稳定业务错误码。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCreateInput"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "当前用户作为买家或卖家的订单分页",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "side",
+            "in": "query",
+            "required": true,
+            "description": "订单视角",
+            "schema": {
+              "enum": [
+                "buyer",
+                "seller"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/OrderList"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "requestId"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "失败；使用HTTP状态码400/401/403/404/409/413/429/500/502/503。code为稳定业务错误码。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/{orderNo}": {
+      "get": {
+        "summary": "订单双方或管理员查看详情与状态历史",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderNo",
+            "in": "path",
+            "required": true,
+            "description": "对外订单号",
+            "schema": {
+              "type": "string",
+              "pattern": "^CM[A-Z0-9]{16,30}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/OrderDetail"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "requestId"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "失败；使用HTTP状态码400/401/403/404/409/413/429/500/502/503。code为稳定业务错误码。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/{orderNo}/pay": {
+      "post": {
+        "summary": "买家执行课堂模拟支付",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderNo",
+            "in": "path",
+            "required": true,
+            "description": "对外订单号",
+            "schema": {
+              "type": "string",
+              "pattern": "^CM[A-Z0-9]{16,30}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/OrderDetail"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "requestId"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "失败；使用HTTP状态码400/401/403/404/409/413/429/500/502/503。code为稳定业务错误码。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderVersionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/{orderNo}/status": {
+      "put": {
+        "summary": "按状态机执行接单、交割、取消、退款、纠纷和裁决",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderNo",
+            "in": "path",
+            "required": true,
+            "description": "对外订单号",
+            "schema": {
+              "type": "string",
+              "pattern": "^CM[A-Z0-9]{16,30}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/OrderDetail"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "requestId"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "失败；使用HTTP状态码400/401/403/404/409/413/429/500/502/503。code为稳定业务错误码。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderActionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/{orderNo}/confirm": {
+      "post": {
+        "summary": "买家在待确认状态确认收货",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderNo",
+            "in": "path",
+            "required": true,
+            "description": "对外订单号",
+            "schema": {
+              "type": "string",
+              "pattern": "^CM[A-Z0-9]{16,30}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/OrderDetail"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "requestId"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "失败；使用HTTP状态码400/401/403/404/409/413/429/500/502/503。code为稳定业务错误码。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderVersionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/{orderNo}/evaluations": {
+      "post": {
+        "summary": "完成订单的交易双方各评价对方一次",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderNo",
+            "in": "path",
+            "required": true,
+            "description": "对外订单号",
+            "schema": {
+              "type": "string",
+              "pattern": "^CM[A-Z0-9]{16,30}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Evaluation"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "requestId"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "失败；使用HTTP状态码400/401/403/404/409/413/429/500/502/503。code为稳定业务错误码。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluationInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{id}/evaluations": {
+      "get": {
+        "summary": "公开历史评价；不返回订单和身份内部字段",
+        "security": [
+          {},
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "资源编号",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/EvaluationList"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "requestId"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "失败；使用HTTP状态码400/401/403/404/409/413/429/500/502/503。code为稳定业务错误码。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2108,6 +2716,522 @@
         "required": [
           "base64",
           "contentType"
+        ]
+      },
+      "OrderParty": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "nickname": {
+            "type": "string"
+          },
+          "avatarId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "certificationStatus": {
+            "enum": [
+              "UNVERIFIED",
+              "PENDING",
+              "VERIFIED",
+              "REJECTED"
+            ]
+          },
+          "creditScore": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "id",
+          "nickname",
+          "certificationStatus",
+          "creditScore"
+        ]
+      },
+      "OrderProduct": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "ON_SALE",
+              "REJECTED",
+              "OFF_SHELF",
+              "LOCKED",
+              "SOLD",
+              "FROZEN"
+            ]
+          },
+          "imageIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "status",
+          "imageIds"
+        ]
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "orderNo": {
+            "type": "string",
+            "pattern": "^CM[A-Z0-9]{16,30}$"
+          },
+          "productId": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "buyerId": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "sellerId": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "amountCents": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_PAYMENT",
+              "PAID",
+              "PENDING_DELIVERY",
+              "IN_PROGRESS",
+              "PENDING_CONFIRMATION",
+              "COMPLETED",
+              "DISPUTED",
+              "REFUNDING",
+              "CANCELLED"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "productTitle": {
+            "type": "string"
+          },
+          "productVersion": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "orderNo",
+          "productId",
+          "buyerId",
+          "sellerId",
+          "amountCents",
+          "status",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "OrderSummary": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Order"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "product": {
+                "$ref": "#/components/schemas/OrderProduct"
+              },
+              "buyer": {
+                "$ref": "#/components/schemas/OrderParty"
+              },
+              "seller": {
+                "$ref": "#/components/schemas/OrderParty"
+              },
+              "role": {
+                "enum": [
+                  "BUYER",
+                  "SELLER",
+                  "ADMIN"
+                ]
+              }
+            },
+            "required": [
+              "product",
+              "buyer",
+              "seller",
+              "role"
+            ]
+          }
+        ]
+      },
+      "OrderHistory": {
+        "type": "object",
+        "properties": {
+          "fromStatus": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "PENDING_PAYMENT",
+                  "PAID",
+                  "PENDING_DELIVERY",
+                  "IN_PROGRESS",
+                  "PENDING_CONFIRMATION",
+                  "COMPLETED",
+                  "DISPUTED",
+                  "REFUNDING",
+                  "CANCELLED"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "toStatus": {
+            "type": "string",
+            "enum": [
+              "PENDING_PAYMENT",
+              "PAID",
+              "PENDING_DELIVERY",
+              "IN_PROGRESS",
+              "PENDING_CONFIRMATION",
+              "COMPLETED",
+              "DISPUTED",
+              "REFUNDING",
+              "CANCELLED"
+            ]
+          },
+          "action": {
+            "type": "string"
+          },
+          "actorRole": {
+            "enum": [
+              "BUYER",
+              "SELLER",
+              "ADMIN",
+              "SYSTEM"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "fromStatus",
+          "toStatus",
+          "action",
+          "actorRole",
+          "createdAt"
+        ]
+      },
+      "Evaluation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "reviewerId": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "reviewerNickname": {
+            "type": "string"
+          },
+          "stars": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "reviewerId",
+          "reviewerNickname",
+          "stars",
+          "content",
+          "createdAt"
+        ]
+      },
+      "PublicEvaluation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "reviewerNickname": {
+            "type": "string"
+          },
+          "stars": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "reviewerNickname",
+          "stars",
+          "content",
+          "createdAt"
+        ]
+      },
+      "OrderDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OrderSummary"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "actions": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "PAY",
+                    "CANCEL",
+                    "ACCEPT",
+                    "REJECT",
+                    "START_DELIVERY",
+                    "MARK_DELIVERED",
+                    "CONFIRM",
+                    "REQUEST_REFUND",
+                    "OPEN_DISPUTE",
+                    "RESOLVE_COMPLETE",
+                    "RESOLVE_REFUND",
+                    "REFUND_SUCCEEDED"
+                  ]
+                }
+              },
+              "canEvaluate": {
+                "type": "boolean"
+              },
+              "myEvaluation": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/Evaluation"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "evaluations": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Evaluation"
+                }
+              },
+              "history": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/OrderHistory"
+                }
+              }
+            },
+            "required": [
+              "actions",
+              "canEvaluate",
+              "myEvaluation",
+              "evaluations",
+              "history"
+            ]
+          }
+        ]
+      },
+      "OrderList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderSummary"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "EvaluationList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicEvaluation"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "OrderCreateInput": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "requestId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$"
+          }
+        },
+        "required": [
+          "productId",
+          "requestId"
+        ]
+      },
+      "OrderActionInput": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "PAY",
+              "CANCEL",
+              "ACCEPT",
+              "REJECT",
+              "START_DELIVERY",
+              "MARK_DELIVERED",
+              "CONFIRM",
+              "REQUEST_REFUND",
+              "OPEN_DISPUTE",
+              "RESOLVE_COMPLETE",
+              "RESOLVE_REFUND",
+              "REFUND_SUCCEEDED"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "requestId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$"
+          }
+        },
+        "required": [
+          "action",
+          "version",
+          "requestId"
+        ]
+      },
+      "OrderVersionInput": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "requestId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$"
+          }
+        },
+        "required": [
+          "version",
+          "requestId"
+        ]
+      },
+      "EvaluationInput": {
+        "type": "object",
+        "properties": {
+          "stars": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 500,
+            "default": ""
+          }
+        },
+        "required": [
+          "stars"
         ]
       }
     }
