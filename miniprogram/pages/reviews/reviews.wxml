@@ -1,0 +1,13 @@
+<view class="page">
+  <view class="title">交易评价</view>
+  <view class="subtitle">来自已完成订单的真实评价记录</view>
+  <view wx:if="{{error}}" class="error" bindtap="retry">{{error}}，点击重试</view>
+  <view wx:for="{{items}}" wx:key="id" class="panel review-card">
+    <view class="row"><text class="reviewer">{{item.reviewerNickname}}</text><text class="stars">{{item.starsText}}</text></view>
+    <view class="content">{{item.content || '这位同学完成了评价，但没有填写文字。'}}</view>
+    <view class="date">{{item.createdAt}}</view>
+  </view>
+  <view wx:if="{{!loading && !items.length && !error}}" class="empty">还没有公开评价</view>
+  <view wx:if="{{loading}}" class="empty">正在加载评价…</view>
+  <view wx:if="{{items.length && items.length >= total}}" class="end-note">评价已全部显示</view>
+</view>

@@ -1,0 +1,47 @@
+<view wx:if="{{error && !order}}" class="page error" bindtap="load">{{error}}，点击重试</view>
+<view wx:if="{{!order && !error}}" class="page empty">正在读取订单…</view>
+<view wx:if="{{order}}" class="page">
+  <view class="panel summary">
+    <view class="row"><text class="order-state">{{order.statusText}}</text><text class="order-no">{{order.orderNo}}</text></view>
+    <view class="row product-row">
+      <image class="thumbnail" src="{{order.product.cover}}" mode="aspectFill" bindtap="preview"/>
+      <view class="grow"><view class="product-title">{{order.product.title}}</view><view class="muted">下单金额</view><view class="price">¥{{order.amountText}}</view></view>
+    </view>
+    <view wx:if="{{error}}" class="error">{{error}}</view>
+    <view wx:if="{{actions.length}}" class="actions action-grid">
+      <button wx:for="{{actions}}" wx:key="action" class="{{item.primary ? 'primary' : 'secondary'}}" data-action="{{item.action}}" bindtap="action" disabled="{{submittingAction !== ''}}">{{submittingAction === item.action ? '处理中…' : item.label}}</button>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">交易双方</view>
+    <view class="line row party" data-user-id="{{order.buyer.id}}" bindtap="openReviews"><view><text class="party-role">买家</text><text class="party-name">{{order.buyer.nickname}}</text></view><text class="muted">{{order.buyer.creditScore}} 信誉分　›</text></view>
+    <view class="line row party" data-user-id="{{order.seller.id}}" bindtap="openReviews"><view><text class="party-role">卖家</text><text class="party-name">{{order.seller.nickname}}</text></view><text class="muted">{{order.seller.creditScore}} 信誉分　›</text></view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">交易进度</view>
+    <view wx:for="{{history}}" wx:key="createdAt" class="timeline-item">
+      <view class="timeline-dot"></view>
+      <view class="grow"><view class="timeline-title">{{item.toText}}</view><view class="muted">{{item.action}} · {{item.actorRole}}</view><view class="timeline-time">{{item.createdAt}}</view></view>
+    </view>
+  </view>
+
+  <view wx:if="{{evaluations.length}}" class="panel">
+    <view class="section-title">交易评价</view>
+    <view wx:for="{{evaluations}}" wx:key="id" class="line evaluation">
+      <view class="row"><text class="reviewer">{{item.reviewerNickname}}</text><text class="stars">{{item.starsText}}</text></view>
+      <view wx:if="{{item.content}}" class="review-content">{{item.content}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{canEvaluate}}" class="panel evaluation-form">
+    <view class="section-title">评价这次交易</view>
+    <view class="star-row">
+      <button wx:for="{{starsList}}" wx:key="*this" class="star-button {{stars >= item ? 'selected' : ''}}" data-stars="{{item}}" bindtap="chooseStars">{{item}}星</button>
+    </view>
+    <textarea placeholder="可补充交易感受" value="{{content}}" maxlength="500" bindinput="inputContent"/>
+    <button class="primary" loading="{{evaluating}}" disabled="{{evaluating}}" bindtap="submitEvaluation">提交评价</button>
+  </view>
+  <view class="safe-note">课堂演示支付与退款均为模拟操作，不产生真实资金变动。</view>
+</view>

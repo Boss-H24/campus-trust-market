@@ -1,0 +1,1 @@
+.review-card{padding:26rpx}.reviewer{font-size:27rpx;font-weight:600}.stars{color:#CF7A18;font-size:28rpx;letter-spacing:2rpx}.content{margin-top:16rpx;color:#4D584E;font-size:26rpx;line-height:1.8;white-space:pre-wrap}.date{margin-top:14rpx;color:#98A097;font-size:21rpx}.end-note{text-align:center;color:#98A097;font-size:22rpx;padding:18rpx 0 30rpx}
