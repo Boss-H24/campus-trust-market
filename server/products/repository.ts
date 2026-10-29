@@ -14,5 +14,5 @@ export class ProductRepository {
         for (const [index, assetId] of imageIds.entries())
             await db.execute('INSERT INTO product_image (product_id,asset_id,sort_order) VALUES (?,?,?)', [productId, assetId, index]);
     }
-    present(product: Row, imageIds: string[]) { return { id: String(product.id), sellerId: String(product.seller_id), categoryId: String(product.category_id), title: product.title, description: product.description, priceCents: product.price_cents, condition: product.condition_label, status: product.status, rejectionReason: product.rejection_reason, version: product.version, imageIds, createdAt: product.created_at, updatedAt: product.updated_at }; }
+    present(product: Row, imageIds: string[]) { return { id: String(product.id), sellerId: String(product.seller_id), categoryId: String(product.category_id), title: product.title, description: product.description, priceCents: product.price_cents, condition: product.condition_label, status: product.status, moderationFrozen: !!product.moderation_frozen, rejectionReason: product.rejection_reason, version: product.version, imageIds, createdAt: product.created_at, updatedAt: product.updated_at }; }
 }

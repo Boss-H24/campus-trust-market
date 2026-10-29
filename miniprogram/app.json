@@ -1,5 +1,5 @@
 {
-  "pages": ["pages/home/home", "pages/publish/publish", "pages/profile/profile", "pages/login/login", "pages/certification/certification", "pages/detail/detail", "pages/mine/mine", "pages/admin/admin"],
+  "pages": ["pages/home/home", "pages/publish/publish", "pages/profile/profile", "pages/login/login", "pages/certification/certification", "pages/detail/detail", "pages/mine/mine", "pages/admin/admin", "pages/community/community", "pages/chat/chat", "pages/report/report"],
   "window": { "navigationBarTitleText": "校园拾集", "navigationBarBackgroundColor": "#F6F6F3", "navigationBarTextStyle": "black", "backgroundColor": "#F6F6F3", "backgroundTextStyle": "dark" },
   "tabBar": { "color": "#737B6E", "selectedColor": "#CF4710", "backgroundColor": "#FFFFFF", "borderStyle": "white", "list": [{ "pagePath": "pages/home/home", "text": "逛校园" }, { "pagePath": "pages/publish/publish", "text": "发布闲置" }, { "pagePath": "pages/profile/profile", "text": "我的" }] },
   "style": "v2",

@@ -72,13 +72,26 @@ A 的第二个迁移为认证记录增加审核版本。实名及商品审核均
 | POST/PATCH `/api/admin/categories` | 分类新增/维护 | 管理员；已引用分类停用而非删除 |
 | GET `/api/admin/logs` | 脱敏操作日志分页 | 管理员 |
 
+2026-10-29：上述C接口已在本地`feature/chat-reports`实现。成立举报依赖B的正式信誉服务，缺失时返回503并回滚全部处置。扩展接口如下，均已记录OpenAPI：
+
+| 方法与路径 | 用途 | 附加约束 |
+|---|---|---|
+| PATCH `/api/admin/reports/{id}` | `{action:INVESTIGATE\|CLOSE,expectedVersion}` | 管理员；关闭仅允许已成立/已驳回工单 |
+| GET `/api/admin/reports/{id}/evidence` | 相关会话列表；带conversationId/afterId读取消息 | 仅举报双方，商品举报须匹配商品，逐次记审计 |
+| GET `/api/admin/users` | 学生账号脱敏分页 | 管理员，无身份密文/登录凭据 |
+| POST `/api/admin/products/{id}/moderation` | `{action:UNFREEZE,reason,expectedVersion}` | 解冻不自动上架、不释放订单锁 |
+| GET `/api/admin/categories` | 包括停用项的分类 | 分类PATCH正文为`{id,name,active}` |
+| GET/PATCH `/api/admin/rules[/{key}]` | 规则列表/更新 | PATCH为`{value,expectedVersion}`；仅白名单键 |
+
+账号PATCH额外要求处置`reason`，不允许role/credit字段；商品详情附`moderationFrozen`。B订单逻辑必须检查此独立标志，不能只判断商品status。B/C的事件类型、服务路径及合并细节见[C→B交接](handoff/c-to-b.md)，待B确认。
+
 举报状态：PENDING → INVESTIGATING → UPHELD/REJECTED → CLOSED。处理动作 NONE/TAKE_DOWN/FREEZE_PRODUCT/DISABLE_USER；冻结不能被卖家重新提交绕过。管理员只有在相关举报/纠纷授权范围内才可读取聊天凭证，不提供所有聊天的公开查询。
 
 C 新增 `conversation`、`chat_message`、`favorite`、`report`、`platform_rule` 等迁移；消息唯一键 `(conversation_id,sender_id,client_message_id)`，收藏唯一键 `(user_id,product_id)`。后台规则通过 `platform_rule` 维护关键词、频率及信誉阈值，A 当前默认阈值应被同名配置统一替换。
 
 ## Git 协作与里程碑
 
-1. A 提交基础增量和接口后，B/C 从 `main` 拉取，在自己的功能分支开发。
+1. A完整交付合入后，B/C从`main`创建自己的分支；提前开发时从`feature/interface-polish`创建。C本次已从A的`08471a9`创建`feature/chat-reports`，A的PR合入后再合并最新main。
 2. B 使用 `feature/orders-credit`，C 使用 `feature/chat-reports`。每个 PR 写明需求编号、变更行为、迁移文件、测试命令。
 3. 改动自己的模块；公共状态和接口变更先讨论。PR 通过 CI 并由另一位同学复核后合入。
 4. 集成后按课堂脚本完整排练；最终测试人员补充 B/C 全流程及安全专项测试。

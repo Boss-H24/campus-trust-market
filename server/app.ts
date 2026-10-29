@@ -7,6 +7,8 @@ import { AppError, ensure } from './common/errors.ts';
 import { rows } from './db/database.ts';
 import { UserService, hashToken } from './users/service.ts';
 import { ProductService } from './products/service.ts';
+import { registerCommunityRoutes } from './community/routes.ts';
+import type { CreditEventApplier } from './moderation/credit.ts';
 declare global {
     namespace Express {
         interface Request {
@@ -15,7 +17,7 @@ declare global {
         }
     }
 }
-export function createApp(config: Config, pool: Pool) {
+export function createApp(config: Config, pool: Pool, applyCredit?: CreditEventApplier) {
     const app = express(), users = new UserService(pool, config), products = new ProductService(pool, config, users);
     app.disable('x-powered-by');
     const ok = (req: Request, res: Response, data: unknown, status = 200) => res.status(status).json({ code: 0, message: '成功', data, requestId: req.requestId });
@@ -72,6 +74,7 @@ export function createApp(config: Config, pool: Pool) {
     app.put('/api/products/:id', auth, async (req, res) => ok(req, res, await products.edit(req.actor!, String(req.params.id), req.body || {})));
     app.put('/api/products/:id/status', auth, async (req, res) => ok(req, res, await products.changeStatus(req.actor!, String(req.params.id), req.body || {})));
     app.post('/api/products/:id/audit', auth, admin, async (req, res) => ok(req, res, await products.changeStatus(req.actor!, String(req.params.id), req.body || {}, true)));
+    registerCommunityRoutes(app, pool, auth, admin, ok, applyCredit);
     app.use((req, res) => { throw new AppError(404, 'NOT_FOUND', '接口不存在'); });
     app.use((error: any, req: Request, res: Response, next: NextFunction) => {
         if (res.headersSent) {

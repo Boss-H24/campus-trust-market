@@ -60,7 +60,7 @@ before(async () => {
     const reset = await pool.getConnection();
     try {
         await reset.query('SET FOREIGN_KEY_CHECKS=0');
-        for (const table of ['operation_log', 'product_image', 'product', 'upload_asset', 'user_certification', 'student_roster', 'auth_session', 'app_user', 'category'])
+        for (const table of ['chat_message', 'conversation', 'favorite', 'report', 'operation_log', 'product_image', 'product', 'upload_asset', 'user_certification', 'student_roster', 'auth_session', 'app_user', 'category'])
             await reset.query(`TRUNCATE TABLE ${table}`);
     }
     finally {

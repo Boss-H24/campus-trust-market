@@ -1,6 +1,6 @@
 import {readFileSync} from 'node:fs';
 const api=JSON.parse(readFileSync('docs/openapi.json','utf8'));
-const source=readFileSync('server/app.ts','utf8');
+const source=['server/app.ts','server/community/routes.ts'].map(path=>readFileSync(path,'utf8')).join('\n');
 const actual=[...source.matchAll(/app\.(get|post|put|patch|delete)\(\s*['"]([^'"]+)['"]/g)].map(([,method,path])=>method+' '+path.replace(/:([a-zA-Z]+)/g,'{$1}'));
 const declared=Object.entries(api.paths).flatMap(([path,operations])=>Object.keys(operations).map(method=>method+' '+path));
 for(const route of actual)if(!declared.includes(route))throw new Error('接口未记录到OpenAPI：'+route);

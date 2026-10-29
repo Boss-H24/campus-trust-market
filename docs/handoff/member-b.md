@@ -1,5 +1,7 @@
 # B：交易、评价与信誉接入
 
+C已在本地`feature/chat-reports`提供咨询及监管增量，B接入前请核对[C→B交接](c-to-b.md)：`REPORT_UPHELD`事件、`server/credit/service.ts`适配路径、`product.moderation_frozen`保护和公共文件合并说明。这些新增细节是C侧实现约定，待B确认及正式联调。
+
 先阅读[详细订单契约](../team-handoff.md#b-的冻结接口)和`server/contracts.ts`，再认领[任务B-01～07](../tasks.md)。商品详情、身份认证与媒体权限由A提供。
 
 ## 首个PR建议：可靠下单
