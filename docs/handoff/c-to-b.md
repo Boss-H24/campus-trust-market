@@ -87,6 +87,8 @@ git merge origin/main
 
 ## 联调验收（等待B）
 
+实现报告已同步补入C内容：[正式Word](../implementation-report/第三部分软件实现报告.docx)、[可阅读正文](../implementation-report/实现报告正文.md)第九至十四节及附录二，以及[PPT素材与讲解提纲](../implementation-report/ppt-assets/README.md)。B接入后请同步更新报告的正式信誉与订单联调结果；C原生截图另按真实验收补入，不使用流程说明图替代。
+
 - [ ] 用正式 `CreditService` 建立成立举报，工单、商品和 -5 在同一事务中提交。
 - [ ] 重复/并发处理同一工单只留一条 `REPORT_UPHELD` 事件；服务失败无部分提交。
 - [ ] 分数在0和100边界保持有效；信誉表唯一键覆盖事件类型、来源及用户。

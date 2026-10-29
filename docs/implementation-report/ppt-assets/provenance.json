@@ -55,6 +55,29 @@
       "sha256": "4b60eadf55eb4ef28d720da327e5b0607c657712798ac7afc2da92964c5b0eb5",
       "originalScreenshot": null,
       "altered": null
+    },
+    {
+      "file": "07-c-chat-flow.png",
+      "kind": "code-derived-diagram",
+      "description": "C咨询消息、幂等和增量轮询说明图",
+      "verifiedDate": "2026-10-29",
+      "codeBaseline": "6112353",
+      "sha256": "ca5f7c81b864674eda2b252ab3d62cfa65790ef104191017bc83384521b10dbc",
+      "originalScreenshot": null,
+      "altered": null,
+      "generator": "Pillow；依据C实现手工编排；不是原生运行截图"
+    },
+    {
+      "file": "08-c-report-flow.png",
+      "kind": "code-derived-diagram",
+      "description": "C举报状态、监管处置和B信誉事务依赖说明图",
+      "verifiedDate": "2026-10-29",
+      "codeBaseline": "6112353",
+      "sha256": "28eb91f579aa872f22662889aa258633cfdefeacb6a34d373bae9fa02720e718",
+      "originalScreenshot": null,
+      "altered": null,
+      "generator": "Pillow；依据C实现手工编排；不是原生运行截图"
     }
-  ]
+  ],
+  "memberCCodeBaseline": "6112353"
 }
