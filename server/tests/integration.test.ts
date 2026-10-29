@@ -51,11 +51,36 @@ async function auditCertification(cid: string, action: string, reason = '') {
 }
 const product = (imageId: string, title = '全新测试教材') => ({ title, description: '干净整洁，校内交接', priceCents: 2500, categoryId: '1', condition: 'GOOD', imageIds: [imageId] });
 async function sellableProduct(title = '订单测试教材') {
+    await pool.execute("UPDATE product p JOIN app_user u ON u.id=p.seller_id SET p.created_at=DATE_SUB(p.created_at,INTERVAL 2 MINUTE) WHERE u.demo_account='seller'");
     const imageId = await upload(tokens.seller);
     const created = await api('/api/products', { method: 'POST', token: tokens.seller, body: product(imageId, title) });
     assert.equal(created.status, 201, created.message);
     assert.equal((await auditProduct(created.data.id, 'APPROVE')).status, 200);
     return created.data.id as string;
+}
+async function completeOrder(title: string, prefix: string) {
+    const pid = await sellableProduct(title);
+    const created = await api('/api/orders', {
+        method: 'POST', token: tokens.buyer, body: { productId: pid, requestId: `${prefix}-order` }
+    });
+    assert.equal(created.status, 201, created.message);
+    const orderNo = created.data.orderNo as string;
+    assert.equal((await api(`/api/orders/${orderNo}/pay`, {
+        method: 'POST', token: tokens.buyer, body: { version: 0, requestId: `${prefix}-pay` }
+    })).status, 200);
+    assert.equal((await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.seller, body: { action: 'ACCEPT', version: 1, requestId: `${prefix}-accept` }
+    })).status, 200);
+    assert.equal((await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.seller, body: { action: 'START_DELIVERY', version: 2, requestId: `${prefix}-start` }
+    })).status, 200);
+    assert.equal((await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.seller, body: { action: 'MARK_DELIVERED', version: 3, requestId: `${prefix}-deliver` }
+    })).status, 200);
+    assert.equal((await api(`/api/orders/${orderNo}/confirm`, {
+        method: 'POST', token: tokens.buyer, body: { version: 4, requestId: `${prefix}-confirm` }
+    })).status, 200);
+    return { pid, orderNo };
 }
 before(async () => {
     testRoot = await mkdtemp(join(tmpdir(), 'campus-market-test-'));
@@ -322,4 +347,239 @@ test('CONC-B：两个买家并发下单只产生一笔有效订单', async () =>
     const [orders] = await pool.query<any[]>('SELECT id FROM orders WHERE product_id=? AND active_product_id=?', [pid, pid]);
     assert.equal(orders.length, 1);
     assert.equal((await api('/api/products/' + pid, { token: tokens.seller })).data.status, 'LOCKED');
+});
+test('订单主流程：支付、接单、交割、确认及幂等版本校验', async () => {
+    const pid = await sellableProduct('主流程订单测试教材');
+    const created = await api('/api/orders', {
+        method: 'POST',
+        token: tokens.buyer,
+        body: { productId: pid, requestId: 'flow-order-0001' }
+    });
+    assert.equal(created.status, 201, created.message);
+    const orderNo = created.data.orderNo;
+
+    const paid = await api(`/api/orders/${orderNo}/pay`, {
+        method: 'POST', token: tokens.buyer, body: { version: 0, requestId: 'flow-pay-0001' }
+    });
+    assert.equal(paid.status, 200, paid.message);
+    assert.equal(paid.data.status, 'PAID');
+    assert.equal(paid.data.version, 1);
+
+    const repeatedPay = await api(`/api/orders/${orderNo}/pay`, {
+        method: 'POST', token: tokens.buyer, body: { version: 0, requestId: 'flow-pay-0001' }
+    });
+    assert.equal(repeatedPay.status, 200);
+    assert.equal(repeatedPay.data.version, 1);
+    assert.equal((await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.buyer,
+        body: { action: 'CANCEL', version: 1, requestId: 'flow-pay-0001' }
+    })).status, 409, '同一requestId不能被其他动作复用');
+
+    assert.equal((await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.buyer,
+        body: { action: 'ACCEPT', version: 1, requestId: 'flow-accept-forbidden' }
+    })).status, 403);
+    assert.equal((await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.seller,
+        body: { action: 'ACCEPT', version: 0, requestId: 'flow-accept-stale' }
+    })).status, 409);
+
+    const accepted = await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.seller,
+        body: { action: 'ACCEPT', version: 1, requestId: 'flow-accept-0001' }
+    });
+    assert.equal(accepted.data.status, 'PENDING_DELIVERY');
+    const started = await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.seller,
+        body: { action: 'START_DELIVERY', version: 2, requestId: 'flow-start-0001' }
+    });
+    assert.equal(started.data.status, 'IN_PROGRESS');
+    const delivered = await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.seller,
+        body: { action: 'MARK_DELIVERED', version: 3, requestId: 'flow-deliver-0001' }
+    });
+    assert.equal(delivered.data.status, 'PENDING_CONFIRMATION');
+    const completed = await api(`/api/orders/${orderNo}/confirm`, {
+        method: 'POST', token: tokens.buyer, body: { version: 4, requestId: 'flow-confirm-0001' }
+    });
+    assert.equal(completed.status, 200, completed.message);
+    assert.equal(completed.data.status, 'COMPLETED');
+    assert.equal(completed.data.version, 5);
+
+    const detail = await api(`/api/orders/${orderNo}`, { token: tokens.seller });
+    assert.equal(detail.data.history.length, 6);
+    assert.equal(detail.data.canEvaluate, true);
+    assert.equal((await api('/api/products/' + pid, { token: tokens.seller })).data.status, 'SOLD');
+    assert.ok((await api('/api/orders?side=buyer&page=1', { token: tokens.buyer })).data.items.some((item: any) => item.orderNo === orderNo));
+    assert.ok((await api('/api/orders?side=seller&page=1', { token: tokens.seller })).data.items.some((item: any) => item.orderNo === orderNo));
+    await pool.execute("UPDATE app_user SET status='ACTIVE',certification_status='VERIFIED' WHERE demo_account='newstudent'");
+    assert.equal((await api(`/api/orders/${orderNo}`, { token: tokens.newstudent })).status, 404);
+    assert.equal((await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.buyer,
+        body: { status: 'COMPLETED', version: 5, requestId: 'flow-arbitrary-status' }
+    })).status, 400);
+});
+test('退款流程：退款成功前保持锁定，成功后恢复商品且可重试', async () => {
+    const pid = await sellableProduct('退款流程测试教材');
+    const created = await api('/api/orders', {
+        method: 'POST', token: tokens.buyer, body: { productId: pid, requestId: 'refund-order-0001' }
+    });
+    const orderNo = created.data.orderNo;
+    assert.equal((await api(`/api/orders/${orderNo}/pay`, {
+        method: 'POST', token: tokens.buyer, body: { version: 0, requestId: 'refund-pay-0001' }
+    })).data.status, 'PAID');
+    const refunding = await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.buyer,
+        body: { action: 'REQUEST_REFUND', version: 1, requestId: 'refund-request-0001' }
+    });
+    assert.equal(refunding.data.status, 'REFUNDING');
+    assert.equal((await api('/api/products/' + pid, { token: tokens.seller })).data.status, 'LOCKED');
+    const cancelled = await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.admin,
+        body: { action: 'REFUND_SUCCEEDED', version: 2, requestId: 'refund-complete-0001' }
+    });
+    assert.equal(cancelled.status, 200, cancelled.message);
+    assert.equal(cancelled.data.status, 'CANCELLED');
+    assert.equal((await api('/api/products/' + pid, { token: tokens.seller })).data.status, 'ON_SALE');
+    const repeated = await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.admin,
+        body: { action: 'REFUND_SUCCEEDED', version: 2, requestId: 'refund-complete-0001' }
+    });
+    assert.equal(repeated.status, 200);
+    assert.equal(repeated.data.version, 3);
+});
+test('SEC-B-FREEZE：退款完成不覆盖监管冻结状态', async () => {
+    const pid = await sellableProduct('冻结恢复测试教材');
+    const created = await api('/api/orders', {
+        method: 'POST', token: tokens.buyer, body: { productId: pid, requestId: 'freeze-order-0001' }
+    });
+    const orderNo = created.data.orderNo;
+    await api(`/api/orders/${orderNo}/pay`, {
+        method: 'POST', token: tokens.buyer, body: { version: 0, requestId: 'freeze-pay-0001' }
+    });
+    await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.buyer,
+        body: { action: 'REQUEST_REFUND', version: 1, requestId: 'freeze-refund-0001' }
+    });
+    await pool.execute("UPDATE product SET status='FROZEN' WHERE id=?", [pid]);
+    const cancelled = await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.admin,
+        body: { action: 'REFUND_SUCCEEDED', version: 2, requestId: 'freeze-complete-0001' }
+    });
+    assert.equal(cancelled.data.status, 'CANCELLED');
+    assert.equal((await api('/api/products/' + pid, { token: tokens.admin })).data.status, 'FROZEN');
+});
+test('订单超时：未付款取消释放商品，已付款未接单进入退款', async () => {
+    const unpaidProduct = await sellableProduct('未付款超时测试教材');
+    const unpaid = await api('/api/orders', {
+        method: 'POST', token: tokens.buyer, body: { productId: unpaidProduct, requestId: 'timeout-unpaid-0001' }
+    });
+    await pool.execute('UPDATE orders SET created_at=DATE_SUB(UTC_TIMESTAMP(3),INTERVAL 16 MINUTE) WHERE order_no=?', [unpaid.data.orderNo]);
+    const expired = await api(`/api/orders/${unpaid.data.orderNo}`, { token: tokens.buyer });
+    assert.equal(expired.data.status, 'CANCELLED');
+    assert.equal((await api('/api/products/' + unpaidProduct, { token: tokens.seller })).data.status, 'ON_SALE');
+    assert.deepEqual(
+        expired.data.history.slice(-1).map((entry: any) => [entry.action, entry.actorRole]),
+        [['EXPIRE', 'SYSTEM']]
+    );
+
+    const paidProduct = await sellableProduct('已付款超时测试教材');
+    const paid = await api('/api/orders', {
+        method: 'POST', token: tokens.buyer, body: { productId: paidProduct, requestId: 'timeout-paid-0001' }
+    });
+    assert.equal((await api(`/api/orders/${paid.data.orderNo}/pay`, {
+        method: 'POST', token: tokens.buyer, body: { version: 0, requestId: 'timeout-paid-pay-0001' }
+    })).data.status, 'PAID');
+    await pool.execute('UPDATE orders SET updated_at=DATE_SUB(UTC_TIMESTAMP(3),INTERVAL 25 HOUR) WHERE order_no=?', [paid.data.orderNo]);
+    const refunding = await api(`/api/orders/${paid.data.orderNo}`, { token: tokens.seller });
+    assert.equal(refunding.data.status, 'REFUNDING');
+    assert.equal((await api('/api/products/' + paidProduct, { token: tokens.seller })).data.status, 'LOCKED');
+    assert.deepEqual(
+        refunding.data.history.slice(-1).map((entry: any) => [entry.action, entry.actorRole]),
+        [['REQUEST_REFUND', 'SYSTEM']]
+    );
+});
+test('SEC-B-DISABLED：卖家禁用时退款完成不恢复商品', async () => {
+    const pid = await sellableProduct('禁用卖家恢复测试教材');
+    const created = await api('/api/orders', {
+        method: 'POST', token: tokens.buyer, body: { productId: pid, requestId: 'disabled-order-0001' }
+    });
+    const orderNo = created.data.orderNo;
+    await api(`/api/orders/${orderNo}/pay`, {
+        method: 'POST', token: tokens.buyer, body: { version: 0, requestId: 'disabled-pay-0001' }
+    });
+    await api(`/api/orders/${orderNo}/status`, {
+        method: 'PUT', token: tokens.buyer, body: { action: 'REQUEST_REFUND', version: 1, requestId: 'disabled-refund-0001' }
+    });
+    await pool.execute("UPDATE app_user SET status='DISABLED' WHERE demo_account='seller'");
+    try {
+        const cancelled = await api(`/api/orders/${orderNo}/status`, {
+            method: 'PUT', token: tokens.admin,
+            body: { action: 'REFUND_SUCCEEDED', version: 2, requestId: 'disabled-complete-0001' }
+        });
+        assert.equal(cancelled.data.status, 'CANCELLED');
+        assert.equal((await api('/api/products/' + pid, { token: tokens.admin })).data.status, 'LOCKED');
+    }
+    finally {
+        await pool.execute("UPDATE app_user SET status='ACTIVE' WHERE demo_account='seller'");
+    }
+});
+test('评价与信誉：完成订单双向一次评价且事件不重复计分', async () => {
+    await pool.execute("UPDATE app_user SET status='ACTIVE',certification_status='VERIFIED' WHERE demo_account='newstudent'");
+    const [users] = await pool.query<any[]>(
+        "SELECT id,demo_account,credit_score FROM app_user WHERE demo_account IN ('buyer','seller','newstudent')"
+    );
+    const accounts = Object.fromEntries(users.map(user => [user.demo_account, user]));
+    const initialBuyer = Number(accounts.buyer.credit_score);
+    const initialSeller = Number(accounts.seller.credit_score);
+    const { orderNo } = await completeOrder('评价流程测试教材', 'review-flow');
+
+    const buyerReview = await api(`/api/orders/${orderNo}/evaluations`, {
+        method: 'POST', token: tokens.buyer, body: { stars: 5, content: '交付准时' }
+    });
+    assert.equal(buyerReview.status, 201, buyerReview.message);
+    const sellerReview = await api(`/api/orders/${orderNo}/evaluations`, {
+        method: 'POST', token: tokens.seller, body: { stars: 4, content: '沟通顺利' }
+    });
+    assert.equal(sellerReview.status, 201, sellerReview.message);
+    assert.equal((await api(`/api/orders/${orderNo}/evaluations`, {
+        method: 'POST', token: tokens.buyer, body: { stars: 5, content: '重复评价' }
+    })).status, 409);
+    assert.equal((await api(`/api/orders/${orderNo}/evaluations`, {
+        method: 'POST', token: tokens.newstudent, body: { stars: 5, content: '越权评价' }
+    })).status, 403);
+
+    const [afterUsers] = await pool.query<any[]>(
+        'SELECT id,credit_score FROM app_user WHERE id IN (?,?) ORDER BY id',
+        [accounts.buyer.id, accounts.seller.id]
+    );
+    const after = new Map(afterUsers.map(user => [String(user.id), Number(user.credit_score)]));
+    assert.equal(after.get(String(accounts.buyer.id)), Math.min(100, initialBuyer + 1 + 1));
+    assert.equal(after.get(String(accounts.seller.id)), Math.min(100, initialSeller + 1 + 2));
+    const [events] = await pool.query<any[]>('SELECT event_type,source_id,user_id,COUNT(*) AS n FROM credit_event WHERE source_id IN (?,?) GROUP BY event_type,source_id,user_id', [
+        orderNo,
+        String(buyerReview.data.id)
+    ]);
+    assert.ok(events.every(event => Number(event.n) === 1));
+
+    const publicHistory = await api(`/api/users/${accounts.seller.id}/evaluations?page=1&pageSize=20`);
+    assert.equal(publicHistory.status, 200, publicHistory.message);
+    assert.ok(publicHistory.data.items.some((item: any) => item.stars === 5 && item.content === '交付准时'));
+    assert.equal(JSON.stringify(publicHistory.data).includes(orderNo), false);
+    assert.equal(JSON.stringify(publicHistory.data).includes('maskedPhone'), false);
+    const detail = await api(`/api/orders/${orderNo}`, { token: tokens.buyer });
+    assert.equal(detail.data.canEvaluate, false);
+    assert.equal(detail.data.myEvaluation.stars, 5);
+});
+test('评价权限：未完成订单和超出星级不能评价', async () => {
+    const pid = await sellableProduct('未完成评价测试教材');
+    const created = await api('/api/orders', {
+        method: 'POST', token: tokens.buyer, body: { productId: pid, requestId: 'review-pending-order' }
+    });
+    assert.equal((await api(`/api/orders/${created.data.orderNo}/evaluations`, {
+        method: 'POST', token: tokens.buyer, body: { stars: 5, content: '尚未完成' }
+    })).status, 409);
+    assert.equal((await api(`/api/orders/${created.data.orderNo}/evaluations`, {
+        method: 'POST', token: tokens.buyer, body: { stars: 6, content: '星级错误' }
+    })).status, 400);
 });

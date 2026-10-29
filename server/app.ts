@@ -74,6 +74,13 @@ export function createApp(config: Config, pool: Pool) {
     app.put('/api/products/:id/status', auth, async (req, res) => ok(req, res, await products.changeStatus(req.actor!, String(req.params.id), req.body || {})));
     app.post('/api/products/:id/audit', auth, admin, async (req, res) => ok(req, res, await products.changeStatus(req.actor!, String(req.params.id), req.body || {}, true)));
     app.post('/api/orders', auth, async (req, res) => ok(req, res, await orders.create(req.actor!, req.body || {}), 201));
+    app.get('/api/orders', auth, async (req, res) => ok(req, res, await orders.list(req.actor!, req.query)));
+    app.get('/api/orders/:orderNo', auth, async (req, res) => ok(req, res, await orders.detail(req.actor!, String(req.params.orderNo))));
+    app.post('/api/orders/:orderNo/pay', auth, async (req, res) => ok(req, res, await orders.act(req.actor!, String(req.params.orderNo), req.body || {}, 'PAY')));
+    app.put('/api/orders/:orderNo/status', auth, async (req, res) => ok(req, res, await orders.act(req.actor!, String(req.params.orderNo), req.body || {})));
+    app.post('/api/orders/:orderNo/confirm', auth, async (req, res) => ok(req, res, await orders.act(req.actor!, String(req.params.orderNo), req.body || {}, 'CONFIRM')));
+    app.post('/api/orders/:orderNo/evaluations', auth, async (req, res) => ok(req, res, await orders.evaluate(req.actor!, String(req.params.orderNo), req.body || {}), 201));
+    app.get('/api/users/:id/evaluations', async (req, res) => ok(req, res, await orders.userEvaluations(String(req.params.id), req.query)));
     app.use((req, res) => { throw new AppError(404, 'NOT_FOUND', '接口不存在'); });
     app.use((error: any, req: Request, res: Response, next: NextFunction) => {
         if (res.headersSent) {
