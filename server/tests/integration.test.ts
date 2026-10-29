@@ -60,8 +60,11 @@ before(async () => {
     const reset = await pool.getConnection();
     try {
         await reset.query('SET FOREIGN_KEY_CHECKS=0');
-        for (const table of ['operation_log', 'product_image', 'product', 'upload_asset', 'user_certification', 'student_roster', 'auth_session', 'app_user', 'category'])
-            await reset.query(`TRUNCATE TABLE ${table}`);
+        const [tableRows] = await reset.query<any[]>('SHOW TABLES');
+        const existingTables = new Set(tableRows.map(row => Object.values(row)[0]));
+        for (const table of ['credit_event', 'evaluation', 'order_status_log', 'orders', 'operation_log', 'product_image', 'product', 'upload_asset', 'user_certification', 'student_roster', 'auth_session', 'app_user', 'category'])
+            if (existingTables.has(table))
+                await reset.query(`TRUNCATE TABLE ${table}`);
     }
     finally {
         await reset.query('SET FOREIGN_KEY_CHECKS=1');
@@ -81,6 +84,19 @@ after(async () => { if (server) {
     await new Promise<void>(resolve => server.close(() => resolve()));
 } await pool.end(); if (testRoot)
     await rm(testRoot, { recursive: true, force: true }); });
+test('DB-B：订单迁移具有有效订单、评价和信誉事件唯一约束', async () => {
+    const [tables] = await pool.query<any[]>(
+        "SELECT table_name FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name IN ('orders','order_status_log','evaluation','credit_event')"
+    );
+    assert.equal(tables.length, 4);
+    const [indexes] = await pool.query<any[]>(
+        "SELECT DISTINCT index_name FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name IN ('orders','evaluation','credit_event')"
+    );
+    const names = indexes.map(row => row.index_name || row.INDEX_NAME);
+    assert.ok(names.includes('uq_orders_active_product'));
+    assert.ok(names.includes('uq_evaluation_reviewer'));
+    assert.ok(names.includes('uq_credit_event'));
+});
 test('TC-USER：真实数据库健康检查、登录失败、令牌过期及注销', async () => {
     const health = await api('/api/health');
     assert.equal(health.status, 200);
