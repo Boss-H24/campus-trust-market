@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createPool } from '../db/database.ts';
+import { createPool, transaction } from '../db/database.ts';
 import { migrate } from '../db/migrate.ts';
 import { seed } from '../db/seed.ts';
 import { getConfig } from '../config.ts';
 import { createApp } from '../app.ts';
+import { CreditService } from '../orders/credit-service.ts';
 import type { Server } from 'node:http';
 const config = getConfig();
 // 外部微信平台单列联调，自动化业务测试不使用本机真实AppSecret。
@@ -96,6 +97,30 @@ test('DB-B：订单迁移具有有效订单、评价和信誉事件唯一约束'
     assert.ok(names.includes('uq_orders_active_product'));
     assert.ok(names.includes('uq_evaluation_reviewer'));
     assert.ok(names.includes('uq_credit_event'));
+});
+test('CREDIT-B：同一信誉事件只计分一次并限制在0到100', async () => {
+    const [user] = await pool.query<any[]>("SELECT id,credit_score FROM app_user WHERE demo_account='buyer'");
+    const userId = String(user[0].id);
+    const initial = Number(user[0].credit_score);
+    const credit = new CreditService();
+    try {
+        const first = await transaction(pool, db => credit.applyEvent(db, { userId, eventType: 'REPORT', sourceId: 'report-test-1', delta: -5 }));
+        const duplicate = await transaction(pool, db => credit.applyEvent(db, { userId, eventType: 'REPORT', sourceId: 'report-test-1', delta: -5 }));
+        assert.equal(first.applied, true);
+        assert.equal(first.creditScore, initial - 5);
+        assert.equal(duplicate.applied, false);
+        assert.equal(duplicate.creditScore, initial - 5);
+        const upper = await transaction(pool, db => credit.applyEvent(db, { userId, eventType: 'COMPLETED', sourceId: 'upper', delta: 999 }));
+        const lower = await transaction(pool, db => credit.applyEvent(db, { userId, eventType: 'FRAUD', sourceId: 'lower', delta: -999 }));
+        assert.equal(upper.applied, true);
+        assert.equal(upper.creditScore, 100);
+        assert.equal(lower.applied, true);
+        assert.equal(lower.creditScore, 0);
+    }
+    finally {
+        await pool.execute('UPDATE app_user SET credit_score=? WHERE id=?', [initial, userId]);
+        await pool.execute('DELETE FROM credit_event WHERE user_id=?', [userId]);
+    }
 });
 test('TC-USER：真实数据库健康检查、登录失败、令牌过期及注销', async () => {
     const health = await api('/api/health');
