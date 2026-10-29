@@ -50,6 +50,13 @@ async function auditCertification(cid: string, action: string, reason = '') {
     return api(`/api/admin/certifications/${cid}/audit`, { method: 'POST', token: tokens.admin, body: { action, reason, expectedVersion: current?.version ?? 0 } });
 }
 const product = (imageId: string, title = '全新测试教材') => ({ title, description: '干净整洁，校内交接', priceCents: 2500, categoryId: '1', condition: 'GOOD', imageIds: [imageId] });
+async function sellableProduct(title = '订单测试教材') {
+    const imageId = await upload(tokens.seller);
+    const created = await api('/api/products', { method: 'POST', token: tokens.seller, body: product(imageId, title) });
+    assert.equal(created.status, 201, created.message);
+    assert.equal((await auditProduct(created.data.id, 'APPROVE')).status, 200);
+    return created.data.id as string;
+}
 before(async () => {
     testRoot = await mkdtemp(join(tmpdir(), 'campus-market-test-'));
     // 与默认部署的 .runtime/uploads 一致，覆盖隐藏目录中的媒体读取。
@@ -271,4 +278,48 @@ test('SEC-RATE：发布频率限制返回429；错误响应不泄露栈或SQL', 
     assert.equal(response.status, 404);
     assert.ok(response.requestId);
     assert.equal(response.stack, undefined);
+});
+test('订单创建：服务端快照价格、重复requestId和自购拦截', async () => {
+    const pid = await sellableProduct('订单创建测试教材');
+    const created = await api('/api/orders', {
+        method: 'POST',
+        token: tokens.buyer,
+        body: { productId: pid, requestId: 'buy-order-0001' }
+    });
+    assert.equal(created.status, 201, created.message);
+    assert.equal(created.data.productId, pid);
+    assert.equal(created.data.amountCents, 2500);
+    assert.equal(created.data.status, 'PENDING_PAYMENT');
+    assert.equal(created.data.version, 0);
+    assert.match(created.data.orderNo, /^CM[A-Z0-9]{16,30}$/);
+    assert.equal((await api('/api/products/' + pid, { token: tokens.seller })).data.status, 'LOCKED');
+
+    const repeated = await api('/api/orders', {
+        method: 'POST',
+        token: tokens.buyer,
+        body: { productId: pid, requestId: 'buy-order-0001' }
+    });
+    assert.equal(repeated.status, 201);
+    assert.equal(repeated.data.orderNo, created.data.orderNo);
+
+    const ownProduct = await sellableProduct('卖家自购测试教材');
+    const selfPurchase = await api('/api/orders', {
+        method: 'POST',
+        token: tokens.seller,
+        body: { productId: ownProduct, requestId: 'self-buy-0001' }
+    });
+    assert.equal(selfPurchase.status, 403);
+    assert.equal(selfPurchase.code, 'SELF_PURCHASE');
+});
+test('CONC-B：两个买家并发下单只产生一笔有效订单', async () => {
+    await pool.execute("UPDATE app_user SET status='ACTIVE',certification_status='VERIFIED' WHERE demo_account='newstudent'");
+    const pid = await sellableProduct('并发下单测试教材');
+    const results = await Promise.all([
+        api('/api/orders', { method: 'POST', token: tokens.buyer, body: { productId: pid, requestId: 'concurrent-buyer-0001' } }),
+        api('/api/orders', { method: 'POST', token: tokens.newstudent, body: { productId: pid, requestId: 'concurrent-buyer-0002' } })
+    ]);
+    assert.deepEqual(results.map(result => result.status).sort(), [201, 409]);
+    const [orders] = await pool.query<any[]>('SELECT id FROM orders WHERE product_id=? AND active_product_id=?', [pid, pid]);
+    assert.equal(orders.length, 1);
+    assert.equal((await api('/api/products/' + pid, { token: tokens.seller })).data.status, 'LOCKED');
 });
