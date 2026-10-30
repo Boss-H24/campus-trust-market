@@ -319,7 +319,13 @@ export class OrderService {
       FROM evaluation e JOIN app_user reviewer ON reviewer.id=e.reviewer_id
       WHERE e.reviewee_id=? ORDER BY e.id DESC LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}`, [userId]);
         return {
-            items: items.map(evaluation => this.presentEvaluation(evaluation)),
+            items: items.map(evaluation => ({
+                id: String(evaluation.id),
+                reviewerNickname: evaluation.reviewer_nickname,
+                stars: Number(evaluation.stars),
+                content: evaluation.content,
+                createdAt: evaluation.created_at
+            })),
             total: Number(count.total),
             page,
             pageSize

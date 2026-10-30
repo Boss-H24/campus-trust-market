@@ -15,7 +15,7 @@ export class CreditService {
     async applyEvent(db: Db, input: CreditEventInput): Promise<{ applied: boolean; creditScore: number }> {
         ensure(/^[1-9]\d{0,18}$/.test(input.userId), 400, 'INVALID_INPUT', '用户编号格式错误');
         ensure(typeof input.sourceId === 'string' && /^[A-Za-z0-9:_-]{1,80}$/.test(input.sourceId), 400, 'INVALID_INPUT', '信誉事件来源格式错误');
-        ensure(Number.isSafeInteger(input.delta), 400, 'INVALID_INPUT', '信誉事件分值无效');
+        ensure(Number.isSafeInteger(input.delta) && input.delta >= -32768 && input.delta <= 32767, 400, 'INVALID_INPUT', '信誉事件分值无效');
         const eventType = validateCreditEvent(input.eventType);
         const [user] = await rows(db, 'SELECT credit_score FROM app_user WHERE id=? FOR UPDATE', [input.userId]);
         ensure(user, 404, 'NOT_FOUND', '用户不存在');

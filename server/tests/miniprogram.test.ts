@@ -129,6 +129,13 @@ test('订单页面：买家卖家切换使用服务端分页与订单动作', as
     assert.equal(paid.options.method, 'POST');
     assert.equal(paid.options.data.version, 0);
     assert.equal(paid.options.data.requestId, 'request-order-0001');
+    detail.data.actions = [{ action: 'START_DELIVERY', label: '开始交割' }];
+    detail.data.order.version = 2;
+    await detail.action({ currentTarget: { dataset: { action: 'START_DELIVERY' } } });
+    const started = requests.find(request => request.path.endsWith('/status'));
+    assert.equal(started.options.method, 'PUT');
+    assert.equal(started.options.data.action, 'START_DELIVERY');
+    assert.equal(started.options.data.version, 2);
     const count = requests.length;
     detail.data.submittingAction = 'PAY';
     await detail.action({ currentTarget: { dataset: { action: 'PAY' } } });

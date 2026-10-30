@@ -33,9 +33,10 @@ export class ProductService {
         id(assetId);
         const [asset] = await rows(this.pool, `SELECT a.*,
       EXISTS(SELECT 1 FROM product_image pi JOIN product p ON p.id=pi.product_id JOIN app_user u ON u.id=p.seller_id WHERE pi.asset_id=a.id AND p.status='ON_SALE' AND u.status='ACTIVE') AS published,
-      EXISTS(SELECT 1 FROM app_user u WHERE u.avatar_asset_id=a.id AND u.status='ACTIVE') AS avatar
-      FROM upload_asset a WHERE a.id=?`, [assetId]);
-        ensure(asset && (Number(asset.published) === 1 || Number(asset.avatar) === 1 || actor?.id === String(asset.owner_id) || actor?.role === 'ADMIN'), 404, 'NOT_FOUND', '图片不存在或无权访问');
+      EXISTS(SELECT 1 FROM app_user u WHERE u.avatar_asset_id=a.id AND u.status='ACTIVE') AS avatar,
+      EXISTS(SELECT 1 FROM product_image pi JOIN orders o ON o.product_id=pi.product_id WHERE pi.asset_id=a.id AND o.buyer_id=?) AS order_buyer
+      FROM upload_asset a WHERE a.id=?`, [actor?.id || '0', assetId]);
+        ensure(asset && (Number(asset.published) === 1 || Number(asset.avatar) === 1 || Number(asset.order_buyer) === 1 || actor?.id === String(asset.owner_id) || actor?.role === 'ADMIN'), 404, 'NOT_FOUND', '图片不存在或无权访问');
         return { path: join(this.config.uploadDir, asset.storage_key), contentType: asset.content_type };
     }
     async checkSeller(db: PoolConnection, actor: Actor) {
