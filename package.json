@@ -11,8 +11,8 @@
     "start": "node --env-file=.env dist/server/main.js",
     "build": "tsc -p tsconfig.build.json",
     "check": "tsc --noEmit && node scripts/check-miniprogram.mjs && node scripts/check-contracts.mjs",
-    "test": "node --test --experimental-test-coverage server/tests/unit.test.ts server/tests/order-unit.test.ts server/tests/miniprogram.test.ts",
-    "test:integration": "node --env-file=.env --test --test-concurrency=1 server/tests/integration.test.ts",
+    "test": "node --test --experimental-test-coverage server/tests/unit.test.ts server/tests/order-unit.test.ts server/tests/community.test.ts server/tests/miniprogram.test.ts",
+    "test:integration": "node --env-file=.env --test --test-concurrency=1 server/tests/integration.test.ts server/tests/community.integration.test.ts",
     "test:performance": "node --env-file=.env scripts/performance.ts",
     "db:migrate": "node --env-file=.env server/db/cli.ts migrate",
     "db:seed": "node --env-file=.env server/db/cli.ts seed"

@@ -2,6 +2,8 @@
 
 本目录和仓库源码共同组成成员A的交接包。A已实现可运行的用户/商品基础；B/C按各自接入清单继续开发。当前完整版本位于 `feature/interface-polish`，复核入口为[PR #1](https://github.com/Boss-H24/campus-trust-market/pull/1)。
 
+本地`feature/chat-reports`另包含C实现，参见[C→B交接](c-to-b.md)、[C设计与演示](../member-c-design.md)及[C测试证据](../member-c-test-report.md)。B正式信誉服务和最终全组联调仍待完成。
+
 ## 获取与启动
 
 仓库已公开，可直接在线阅读。按[协作说明](../../CONTRIBUTING.md)克隆并切换分支进行开发；小组同学先填写[协作申请](https://github.com/Boss-H24/campus-trust-market/issues/new?template=join-team.yml)，负责人核对身份后邀请写入权限。每台电脑首次执行setup生成独立配置，不需要A的数据库或密码。
@@ -19,8 +21,8 @@
 | [根README](../../README.md) | 环境、启动、演示账号、测试命令 |
 | [仓库说明](../../CONTRIBUTING.md) | 目录、分支、PR和迁移协作 |
 | [任务清单](../tasks.md) | A/B/C认领及验收状态 |
-| [B接入清单](member-b.md) / [C接入清单](member-c.md) | B 已完成增量记录；C 首个可提交增量、依赖与验收 |
-| [接口交接](../team-handoff.md) / [OpenAPI](../openapi.json) | B/C冻结边界；20个A已实现操作 |
+| [B接入清单](member-b.md) / [C接入清单](member-c.md) | 第一个可提交增量、依赖与验收 |
+| [接口交接](../team-handoff.md) / [OpenAPI](../openapi.json) | B/C边界；本分支含A+C共42个已实现操作 |
 | [设计](../design.md) / [变更记录](../changes.md) | 分层、ER图、隐私及交接冲突处理 |
 | [测试报告](../test-report.md) / [课堂脚本](../classroom-demo.md) | 验收证据与展示步骤 |
 | [素材说明](../../assets/demo-products/README.md) | 摄影图片、授权与演示样图标注 |
@@ -31,7 +33,7 @@
 - 登录得到的token放`Authorization: Bearer ...`；小程序复用`miniprogram/utils/api.js`，不放URL。
 - 编号为字符串、金额为整数分、列表默认每页20条。客户端提交动作；角色、所有权、状态及版本由后端检查。
 - 公共类型和订单/信誉常量在`server/contracts.ts`。数据库事务复用`server/db/database.ts`的`transaction`，事务内传同一个连接。
-- B 的订单、评价和信誉接口已在`feature/orders-credit`实现，说明见[订单实现说明](../orders.md)；C 接口尚未实现，详细请求和权限以`docs/team-handoff.md`为准。新增真实接口时同步OpenAPI，不以空响应代替功能。
+- B 和 C 增量均已提交，本地试用分支进行联合验证；原始独立交付边界详见两份交接记录。
 
 ## 接手确认
 

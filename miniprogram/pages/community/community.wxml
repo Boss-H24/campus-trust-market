@@ -1,0 +1,11 @@
+<view class="page">
+  <view class="title">我的互动</view>
+  <view class="tabs section"><button class="{{mode === 'conversations' ? 'primary' : 'secondary'}}" data-mode="conversations" bindtap="choose">咨询</button><button class="{{mode === 'favorites' ? 'primary' : 'secondary'}}" data-mode="favorites" bindtap="choose">收藏</button><button class="{{mode === 'reports' ? 'primary' : 'secondary'}}" data-mode="reports" bindtap="choose">举报结果</button></view>
+  <view wx:if="{{error}}" class="error" bindtap="retry">{{error}}，点击重试</view>
+  <view wx:for="{{items}}" wx:key="index" class="panel section">
+    <view wx:if="{{mode === 'conversations'}}" data-id="{{item.id}}" bindtap="open"><view class="section-title">{{item.peerName}} · {{item.productTitle}}</view><view class="muted">{{item.lastMessage || '尚无消息，点击开始咨询'}}　›</view></view>
+    <block wx:elif="{{mode === 'favorites'}}"><view data-id="{{item.productId}}" bindtap="open"><view class="section-title">{{item.title}}</view><view class="row"><text class="price">¥{{item.priceText}}</text><text class="badge {{item.available ? '' : 'warning'}}">{{item.available ? '可查看' : '商品已不可用'}}</text></view></view><button class="secondary small" data-id="{{item.productId}}" bindtap="remove">取消收藏</button></block>
+    <block wx:else><view class="row"><text class="section-title">举报 #{{item.id}}</text><text class="badge">{{item.status === 'PENDING' ? '待处理' : item.status === 'INVESTIGATING' ? '调查中' : item.status === 'UPHELD' ? '举报成立' : item.status === 'REJECTED' ? '已驳回' : '已关闭'}}</text></view><view class="line">{{item.reason}}</view><view class="muted">{{item.description}}</view><view wx:if="{{item.resolutionReason}}" class="line">处理结果：{{item.resolutionReason}}</view></block>
+  </view>
+  <view wx:if="{{!items.length && !loading && !error}}" class="empty">暂无记录</view><view wx:if="{{loading}}" class="empty">正在加载…</view><view wx:if="{{items.length && items.length === total}}" class="safe-note">已显示全部记录</view>
+</view>

@@ -27,8 +27,9 @@ log-error=$((Join-Path $taskAsciiRoot '.runtime/mysql-error.log').Replace('\','/
 [IO.File]::WriteAllText($ini,$configuration,(New-Object Text.UTF8Encoding $false))
 $fresh = -not (Test-Path -LiteralPath (Join-Path $data 'mysql'))
 if ($fresh) {
-    & $mysqld "--defaults-file=$ini" --initialize-insecure --console 2>&1 | ForEach-Object { "$($_)" } | Set-Content -LiteralPath '.runtime/mysql-initialize.log'
-    if ($LASTEXITCODE -ne 0) { throw 'MySQL initialization failed; see .runtime/mysql-initialize.log' }
+    # Windows PowerShell 5把原生stderr的信息日志也作为错误；用进程退出码判断初始化结果。
+    $taskInitialization = Start-Process -FilePath $mysqld -ArgumentList "`"--defaults-file=$ini`" --initialize-insecure --console" -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput (Join-Path $TaskRoot '.runtime/mysql-initialize.stdout.log') -RedirectStandardError (Join-Path $TaskRoot '.runtime/mysql-initialize.log')
+    if ($taskInitialization.ExitCode -ne 0) { throw 'MySQL initialization failed; see .runtime/mysql-initialize.log' }
 }
 $process = Start-Process -FilePath $mysqld -ArgumentList "`"--defaults-file=$ini`"" -WindowStyle Hidden -PassThru -WorkingDirectory $TaskRoot
 $process.Id | Set-Content -LiteralPath '.runtime/mysql.pid'

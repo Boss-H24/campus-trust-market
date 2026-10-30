@@ -8,6 +8,8 @@
     <view wx:if="{{sellerReviews.length}}" class="panel reviews-panel"><view class="section-title">最近评价</view><view wx:for="{{sellerReviews}}" wx:key="id" class="line review-item"><view class="row"><text class="reviewer">{{item.reviewerNickname}}</text><text class="review-stars">{{item.starsText}}</text></view><text wx:if="{{item.content}}" class="review-text">{{item.content}}</text></view></view>
     <button wx:if="{{own && (product.status === 'ON_SALE' || product.status === 'PENDING' || product.status === 'REJECTED' || product.status === 'OFF_SHELF')}}" class="primary" bindtap="edit">编辑商品</button>
     <button wx:if="{{canBuy}}" class="primary order-button" loading="{{ordering}}" disabled="{{ordering}}" bindtap="order">立即下单</button>
+    <view wx:if="{{!own}}" class="actions"><button class="primary small" bindtap="consult">咨询卖家</button><button class="secondary small" bindtap="favorite">收藏商品</button></view>
+    <view wx:if="{{!own}}" class="actions"><button class="secondary small" bindtap="report" data-type="PRODUCT">举报商品</button><button class="secondary small" bindtap="report" data-type="USER">举报卖家</button></view>
     <view class="safe-note">请在校内公共区域交接，核验商品后再确认交易。</view>
   </view>
 </block>

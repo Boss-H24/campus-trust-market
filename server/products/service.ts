@@ -9,6 +9,7 @@ import { rows, run, transaction, audit } from '../db/database.ts';
 import { UserService } from '../users/service.ts';
 import { normalizeTitle, nextProductState, validateProduct, validateImage, type ProductInput } from './rules.ts';
 import { ProductRepository } from './repository.ts';
+import { rule, checkCommunityContent } from '../community/rules.ts';
 export class ProductService {
     pool: Pool;
     config: Config;
@@ -32,7 +33,7 @@ export class ProductService {
     async media(assetId: string, actor?: Actor) {
         id(assetId);
         const [asset] = await rows(this.pool, `SELECT a.*,
-      EXISTS(SELECT 1 FROM product_image pi JOIN product p ON p.id=pi.product_id JOIN app_user u ON u.id=p.seller_id WHERE pi.asset_id=a.id AND p.status='ON_SALE' AND u.status='ACTIVE') AS published,
+      EXISTS(SELECT 1 FROM product_image pi JOIN product p ON p.id=pi.product_id JOIN app_user u ON u.id=p.seller_id WHERE pi.asset_id=a.id AND p.status='ON_SALE' AND p.moderation_frozen=0 AND u.status='ACTIVE') AS published,
       EXISTS(SELECT 1 FROM app_user u WHERE u.avatar_asset_id=a.id AND u.status='ACTIVE') AS avatar,
       EXISTS(SELECT 1 FROM product_image pi JOIN orders o ON o.product_id=pi.product_id WHERE pi.asset_id=a.id AND o.buyer_id=?) AS order_buyer
       FROM upload_asset a WHERE a.id=?`, [actor?.id || '0', assetId]);
@@ -43,9 +44,10 @@ export class ProductService {
         const [user] = await rows(db, 'SELECT status,certification_status,credit_score FROM app_user WHERE id=? FOR UPDATE', [actor.id]);
         ensure(user?.status === 'ACTIVE', 403, 'ACCOUNT_DISABLED', '账号已禁用');
         ensure(user.certification_status === 'VERIFIED', 403, 'CERTIFICATION_REQUIRED', '请先完成学生实名认证');
-        ensure(user.credit_score >= 60, 403, 'LOW_CREDIT', '信誉分低于60，暂不能发布商品');
+        ensure(user.credit_score >= await rule(db, 'publish_min_credit'), 403, 'LOW_CREDIT', '信誉分低于平台发布门槛，暂不能发布商品');
     }
     async checkInput(db: PoolConnection, actor: Actor, input: ProductInput, excludedId: string | null = null) {
+        await checkCommunityContent(db, input.title + ' ' + input.description);
         const [category] = await rows(db, 'SELECT id FROM category WHERE id=? AND active=1', [input.categoryId]);
         ensure(category, 400, 'INVALID_CATEGORY', '商品分类不存在或已停用');
         ensure(await this.repository.assertImages(db, actor.id, input.imageIds), 403, 'ASSET_FORBIDDEN', '只能使用自己上传的商品图片');
@@ -59,7 +61,7 @@ export class ProductService {
             await this.checkSeller(db, actor);
             await this.checkInput(db, actor, input);
             const [recent] = await rows(db, 'SELECT COUNT(*) AS n FROM product WHERE seller_id=? AND created_at>=DATE_SUB(UTC_TIMESTAMP(3),INTERVAL 1 MINUTE)', [actor.id]);
-            ensure(recent.n < 5, 429, 'RATE_LIMITED', '每分钟最多发布5件商品，请稍后重试');
+            ensure(recent.n < await rule(db, 'publish_per_minute'), 429, 'RATE_LIMITED', '已达到平台每分钟发布上限，请稍后重试');
             const result = await run(db, 'INSERT INTO product (seller_id,category_id,title,normalized_title,description,price_cents,condition_label) VALUES (?,?,?,?,?,?,?)', [actor.id, input.categoryId, input.title, normalizeTitle(input.title), input.description, input.priceCents, input.condition]);
             const pid = String(result.insertId);
             await this.repository.replaceImages(db, pid, input.imageIds);
@@ -73,9 +75,10 @@ export class ProductService {
         const input = validateProduct(body);
         await transaction(this.pool, async (db) => {
             await this.checkSeller(db, actor);
-            const [product] = await rows(db, 'SELECT seller_id,status FROM product WHERE id=? FOR UPDATE', [productId]);
+            const [product] = await rows(db, 'SELECT seller_id,status,moderation_frozen FROM product WHERE id=? FOR UPDATE', [productId]);
             ensure(product, 404, 'NOT_FOUND', '商品不存在');
             ensure(String(product.seller_id) === actor.id, 403, 'FORBIDDEN', '只能修改自己的商品');
+            ensure(!product.moderation_frozen, 409, 'PRODUCT_FROZEN', '商品受监管冻结，暂不能编辑');
             const status = nextProductState(product.status, 'EDIT');
             await this.checkInput(db, actor, input, productId);
             await run(db, "UPDATE product SET category_id=?,title=?,normalized_title=?,description=?,price_cents=?,condition_label=?,status=?,rejection_reason='',version=version+1 WHERE id=?", [input.categoryId, input.title, normalizeTitle(input.title), input.description, input.priceCents, input.condition, status, productId]);
@@ -95,9 +98,10 @@ export class ProductService {
         await transaction(this.pool, async (db) => {
             if (!admin && action === 'SUBMIT')
                 await this.checkSeller(db, actor);
-            const [product] = await rows(db, 'SELECT seller_id,status,version FROM product WHERE id=? FOR UPDATE', [productId]);
+            const [product] = await rows(db, 'SELECT seller_id,status,version,moderation_frozen FROM product WHERE id=? FOR UPDATE', [productId]);
             ensure(product, 404, 'NOT_FOUND', '商品不存在');
             ensure(admin || String(product.seller_id) === actor.id, 403, 'FORBIDDEN', '只能操作自己的商品');
+            ensure(!product.moderation_frozen, 409, 'PRODUCT_FROZEN', '商品受监管冻结，请先由管理员解除冻结');
             if (admin)
                 ensure(Number(product.version) === body.expectedVersion, 409, 'STALE_REVIEW', '商品内容已更新，请刷新后重新审核');
             const status = nextProductState(product.status, action);
@@ -109,7 +113,7 @@ export class ProductService {
     async detail(productId: string, actor?: Actor) {
         id(productId);
         const product = await this.repository.find(productId);
-        ensure(product && ((product.status === 'ON_SALE' && product.seller_status === 'ACTIVE') || actor?.id === String(product.seller_id) || actor?.role === 'ADMIN'), 404, 'NOT_FOUND', '商品不存在或尚未上架');
+        ensure(product && ((product.status === 'ON_SALE' && !product.moderation_frozen && product.seller_status === 'ACTIVE') || actor?.id === String(product.seller_id) || actor?.role === 'ADMIN'), 404, 'NOT_FOUND', '商品不存在或尚未上架');
         return { ...this.repository.present(product, await this.repository.images(this.pool, productId)), seller: this.users.present(await this.users.repository.profile(String(product.seller_id)), false) };
     }
     async list(query: Record<string, unknown>, actor?: Actor) {
@@ -123,7 +127,7 @@ export class ProductService {
             return fallback; ensure(typeof value === 'string' && /^\d+$/.test(value), 400, 'INVALID_INPUT', '分页或价格格式错误'); const n = Number(value); ensure(Number.isSafeInteger(n) && n >= min && n <= max, 400, 'INVALID_INPUT', '分页或价格超出范围'); return n; }
         const page = integer(query.page, 1, 10000, 1), pageSize = integer(query.pageSize, 20, 100, 1), params: any[] = [], clauses: string[] = [];
         if (scope === 'public')
-            clauses.push("p.status='ON_SALE'", "u.status='ACTIVE'");
+            clauses.push("p.status='ON_SALE'", "p.moderation_frozen=0", "u.status='ACTIVE'");
         else if (scope === 'mine') {
             clauses.push('p.seller_id=?');
             params.push(actor!.id);
@@ -134,6 +138,10 @@ export class ProductService {
             ensure(scope !== 'public' || query.status === 'ON_SALE', 400, 'INVALID_INPUT', '公开查询仅支持上架商品');
             clauses.push('p.status=?');
             params.push(query.status);
+        }
+        if (query.moderationFrozen !== undefined) {
+            ensure(scope === 'admin' && query.moderationFrozen === '1', 400, 'INVALID_INPUT', '冻结筛选仅供管理员使用');
+            clauses.push('(p.moderation_frozen=1 OR p.status=\'FROZEN\')');
         }
         if (query.categoryId !== undefined) {
             clauses.push('p.category_id=?');

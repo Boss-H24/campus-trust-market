@@ -72,7 +72,7 @@ export class OrderRepository {
     }
 
     async productForUpdate(db: Db, productId: string): Promise<Row | undefined> {
-        const [product] = await rows(db, `SELECT p.id,p.seller_id,p.status,p.version,
+        const [product] = await rows(db, `SELECT p.id,p.seller_id,p.status,p.version,p.moderation_frozen,
       seller.status AS seller_status,seller.certification_status AS seller_certification
       FROM product p JOIN app_user seller ON seller.id=p.seller_id
       WHERE p.id=? FOR UPDATE`, [productId]);

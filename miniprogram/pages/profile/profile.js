@@ -10,7 +10,7 @@ Page({ data: { user: null, avatar: '', statusText: '', error: '' }, onShow() { t
     catch (err) {
         this.setData({ user: null });
         api.error(this, err);
-    } }, login() { wx.navigateTo({ url: '/pages/login/login' }); }, certify() { wx.navigateTo({ url: '/pages/certification/certification' }); }, orders() { wx.navigateTo({ url: '/pages/orders/orders' }); }, mine() { wx.navigateTo({ url: '/pages/mine/mine' }); }, admin() { wx.navigateTo({ url: '/pages/admin/admin' }); }, async logout() { try {
+    } }, community(e) { wx.navigateTo({ url: '/pages/community/community?mode=' + e.currentTarget.dataset.mode }); }, login() { wx.navigateTo({ url: '/pages/login/login' }); }, certify() { wx.navigateTo({ url: '/pages/certification/certification' }); }, orders() { wx.navigateTo({ url: '/pages/orders/orders' }); }, mine() { wx.navigateTo({ url: '/pages/mine/mine' }); }, admin() { wx.navigateTo({ url: '/pages/admin/admin' }); }, async logout() { try {
         await api.request('/api/auth/logout', { method: 'POST' });
     }
     catch (err) {

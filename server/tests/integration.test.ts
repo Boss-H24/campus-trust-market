@@ -9,6 +9,7 @@ import { seed } from '../db/seed.ts';
 import { getConfig } from '../config.ts';
 import { createApp } from '../app.ts';
 import { CreditService } from '../orders/credit-service.ts';
+import { rows } from '../db/database.ts';
 import type { Server } from 'node:http';
 const config = getConfig();
 // 外部微信平台单列联调，自动化业务测试不使用本机真实AppSecret。
@@ -95,7 +96,7 @@ before(async () => {
         await reset.query('SET FOREIGN_KEY_CHECKS=0');
         const [tableRows] = await reset.query<any[]>('SHOW TABLES');
         const existingTables = new Set(tableRows.map(row => Object.values(row)[0]));
-        for (const table of ['credit_event', 'evaluation', 'order_status_log', 'orders', 'operation_log', 'product_image', 'product', 'upload_asset', 'user_certification', 'student_roster', 'auth_session', 'app_user', 'category'])
+        for (const table of ['chat_message', 'conversation', 'favorite', 'report', 'credit_event', 'evaluation', 'order_status_log', 'orders', 'operation_log', 'product_image', 'product', 'upload_asset', 'user_certification', 'student_roster', 'auth_session', 'app_user', 'category'])
             if (existingTables.has(table))
                 await reset.query(`TRUNCATE TABLE ${table}`);
     }
@@ -702,4 +703,51 @@ test('LOCK-B：订单完成与商品修改按用户后商品的顺序获取锁',
     assert.equal(updateError, undefined);
     assert.equal(completion?.status, 200, completion?.message);
     assert.equal(completion?.data.status, 'COMPLETED');
+});
+
+test('BC：成立举报使用正式信誉账本，并发处置只扣一次分', async () => {
+    const pid = await sellableProduct('BC正式信誉联调教材');
+    const seller = (await api('/api/users/me', { token: tokens.seller })).data;
+    const report = await api('/api/reports', { method: 'POST', token: tokens.buyer,
+        body: { targetType: 'PRODUCT', targetId: pid, reason: '描述不符', description: '核对描述' } });
+    assert.equal(report.status, 201);
+    const resolve = () => api(`/api/admin/reports/${report.data.id}/resolve`, { method: 'POST', token: tokens.admin,
+        body: { decision: 'UPHELD', action: 'FREEZE_PRODUCT', reason: '核实违规' } });
+    const results = await Promise.all([resolve(), resolve()]);
+    assert.deepEqual(results.map(r => r.status).sort(), [200, 409]);
+    const ledger = await rows(pool, "SELECT * FROM credit_event WHERE event_type='REPORT' AND source_id=? AND user_id=?", [report.data.id, seller.id]);
+    assert.equal(ledger.length, 1);
+    assert.equal(ledger[0].delta, -5);
+    assert.equal((await api('/api/users/me', { token: tokens.seller })).data.creditScore, seller.creditScore - 5);
+    assert.equal((await api('/api/products/' + pid, { token: tokens.admin })).data.status, 'FROZEN');
+    // 其余历史测试以80分为初始前提，仅恢复测试夹具，不改演示库。
+    await pool.execute('UPDATE app_user SET credit_score=? WHERE id=?', [seller.creditScore, seller.id]);
+});
+
+test('BC：锁定商品在取消及退款后保留监管冻结，冻结标志禁止下单', async () => {
+    for (const paid of [false, true]) {
+        const suffix = paid ? 'paid' : 'unpaid';
+        const pid = await sellableProduct('BC冻结取消教材' + suffix);
+        const created = await api('/api/orders', { method: 'POST', token: tokens.buyer,
+            body: { productId: pid, requestId: 'bc-freeze-' + suffix } });
+        assert.equal(created.status, 201);
+        const no = created.data.orderNo;
+        if (paid) assert.equal((await api(`/api/orders/${no}/pay`, { method: 'POST', token: tokens.buyer,
+            body: { version: 0, requestId: 'bc-pay-' + suffix } })).status, 200);
+        await pool.execute('UPDATE product SET moderation_frozen=1 WHERE id=?', [pid]);
+        const cancelled = await api(`/api/orders/${no}/status`, { method: 'PUT', token: tokens.buyer,
+            body: { action: paid ? 'REQUEST_REFUND' : 'CANCEL', version: paid ? 1 : 0, requestId: 'bc-cancel-' + suffix } });
+        assert.equal(cancelled.status, 200, cancelled.message);
+        if (paid) assert.equal((await api(`/api/orders/${no}/status`, { method: 'PUT', token: tokens.admin,
+            body: { action: 'REFUND_SUCCEEDED', version: 2, requestId: 'bc-refund-' + suffix } })).status, 200);
+        const product = await api('/api/products/' + pid, { token: tokens.admin });
+        assert.equal(product.data.status, 'FROZEN');
+        assert.equal(product.data.moderationFrozen, true);
+        // 防御状态和独立监管标志暂时不一致的情形。
+        await pool.execute("UPDATE product SET status='ON_SALE' WHERE id=?", [pid]);
+        const denied = await api('/api/orders', { method: 'POST', token: tokens.buyer,
+            body: { productId: pid, requestId: 'bc-denied-' + suffix } });
+        assert.equal(denied.status, 409);
+        await pool.execute("UPDATE product SET status='FROZEN' WHERE id=?", [pid]);
+    }
 });

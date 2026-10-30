@@ -115,9 +115,12 @@ export class OrderService {
 
     private async releaseProduct(db: Db, productId: string): Promise<void> {
         const product = await this.repository.productForUpdate(db, productId);
-        if (!product || product.status !== 'LOCKED' || product.seller_status !== 'ACTIVE' || product.seller_certification !== 'VERIFIED')
+        if (!product || product.status !== 'LOCKED')
             return;
-        await run(db, "UPDATE product SET status='ON_SALE',version=version+1 WHERE id=? AND status='LOCKED'", [productId]);
+        if (!product.moderation_frozen && (product.seller_status !== 'ACTIVE' || product.seller_certification !== 'VERIFIED'))
+            return;
+        const status = product.moderation_frozen ? 'FROZEN' : 'ON_SALE';
+        await run(db, "UPDATE product SET status=?,version=version+1 WHERE id=? AND status='LOCKED'", [status, productId]);
     }
 
     private async removeProductFromSale(db: Db, productId: string): Promise<void> {
@@ -172,11 +175,11 @@ export class OrderService {
             ensure(seller.certification_status === 'VERIFIED', 403, 'CERTIFICATION_REQUIRED', '卖家尚未完成实名认证');
             ensure(users.get(actor.id)?.certification_status === 'VERIFIED', 403, 'CERTIFICATION_REQUIRED', '请先完成学生实名认证');
 
-            const [product] = await rows(db, `SELECT id,seller_id,title,price_cents,status,version
+            const [product] = await rows(db, `SELECT id,seller_id,title,price_cents,status,version,moderation_frozen
         FROM product WHERE id=? FOR UPDATE`, [productId]);
             ensure(product && String(product.seller_id) === sellerId, 409, 'PRODUCT_UNAVAILABLE', '商品当前不可购买');
-            ensure(product.status === 'ON_SALE', 409, 'PRODUCT_UNAVAILABLE', '商品已下架、锁定或售出');
-            const locked = await run(db, "UPDATE product SET status='LOCKED',version=version+1 WHERE id=? AND status='ON_SALE' AND version=?", [productId, product.version]);
+            ensure(product.status === 'ON_SALE' && !product.moderation_frozen, 409, 'PRODUCT_UNAVAILABLE', '商品已下架、冻结、锁定或售出');
+            const locked = await run(db, "UPDATE product SET status='LOCKED',version=version+1 WHERE id=? AND status='ON_SALE' AND moderation_frozen=0 AND version=?", [productId, product.version]);
             ensure(locked.affectedRows === 1, 409, 'PRODUCT_UNAVAILABLE', '商品状态已变化，请刷新后重试');
 
             const nextOrderNo = this.orderNo();

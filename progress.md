@@ -51,3 +51,7 @@ c16e38e文档收尾已推送并固定member-a-20261028，远端标签解引用�
 用户要求处理已收到申请：连接器已读取开放Issue #3 cxl→continuetosuccess（成员B）及#4 yjj→yanjason179-jpg（成员C）。进入正常GitHub Settings/access时要求Boss-H24重新进行sudo密码验证，尚未发送邀请。已用异步问题请用户在Chrome的Confirm access页自行验证，不收集密码。任务清单先准确记录申请认领，不能把待发邀请说成已加入；验证完成后查看现有权限/邀请，逐个邀请并核实Pending或Accepted状态。
 
 用户完成GitHub保护操作验证后，正常协作设置页显示原无协作者或待邀请。已依申请作者分别搜索精确账号并发送邀请：continuetosuccess（cxl/B）和yanjason179-jpg（yjj/C）。页面明确显示2 invitations、两者Pending Invite/Awaiting response；未将等待接受写成已加入。任务清单同步账号、申请链接及待接受状态；申请暂保持开放。
+
+2026-10-30用户要求试用B/C：取回B合入提交c8766c7及C分支90dd1ce，建本地codex/try-bc，合并公共路由、14页、测试和50操作契约。两项BC集成测试先复现信誉服务503和取消后冻结商品上架；适配C事件到B正式REPORT账本，并在下单/取消/退款保留moderation_frozen，复验通过。27项单元/页面、36项真实MySQL集成、类型和构建、14WXML/15WXSS官方编译通过。演示库迁移003/004并启动本机3000，不重置演示数据；新建两件“联调试用”样品供检查，原四件商品保留。本地口令说明在忽略的.runtime中，不输出或上传凭据。
+
+原生检查已确认买家个人页组合入口及咨询消息，订单创建成功但导航未完成；不能将此计为完整原生验收。旧CLI islogin返回true但官方wechatide状态loginExpired:true，实际工具头像未登录。已通过官方login打开正式登录窗口，等待用户本人扫码/手机确认，任务login_eb6370f9-aa96-4347-b56f-dd88c026c8ec。后续先轮询此任务，再状态检查，禁止重复新建登录流程。代码尚未推送；main及同学分支不修改。

@@ -1,6 +1,7 @@
 # B：交易、评价与信誉接入
 
 > 状态：`B-01`～`B-07` 已在分支 `feature/orders-credit` 完成。权威实现说明、迁移、状态图、接口和验证命令见[订单实现说明](../orders.md)。下文保留首次接入任务与验收口径，便于复核。
+C已在本地`feature/chat-reports`提供咨询及监管增量，B接入前请核对[C→B交接](c-to-b.md)：`REPORT_UPHELD`事件、`server/credit/service.ts`适配路径、`product.moderation_frozen`保护和公共文件合并说明。这些新增细节是C侧实现约定，待B确认及正式联调。
 
 先阅读[详细订单契约](../team-handoff.md#b-的冻结接口)和`server/contracts.ts`，再认领[任务B-01～07](../tasks.md)。商品详情、身份认证与媒体权限由A提供。
 
