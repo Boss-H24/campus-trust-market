@@ -19,7 +19,7 @@
 | [根README](../../README.md) | 环境、启动、演示账号、测试命令 |
 | [仓库说明](../../CONTRIBUTING.md) | 目录、分支、PR和迁移协作 |
 | [任务清单](../tasks.md) | A/B/C认领及验收状态 |
-| [B接入清单](member-b.md) / [C接入清单](member-c.md) | 第一个可提交增量、依赖与验收 |
+| [B接入清单](member-b.md) / [C接入清单](member-c.md) | B 已完成增量记录；C 首个可提交增量、依赖与验收 |
 | [接口交接](../team-handoff.md) / [OpenAPI](../openapi.json) | B/C冻结边界；20个A已实现操作 |
 | [设计](../design.md) / [变更记录](../changes.md) | 分层、ER图、隐私及交接冲突处理 |
 | [测试报告](../test-report.md) / [课堂脚本](../classroom-demo.md) | 验收证据与展示步骤 |
@@ -31,7 +31,7 @@
 - 登录得到的token放`Authorization: Bearer ...`；小程序复用`miniprogram/utils/api.js`，不放URL。
 - 编号为字符串、金额为整数分、列表默认每页20条。客户端提交动作；角色、所有权、状态及版本由后端检查。
 - 公共类型和订单/信誉常量在`server/contracts.ts`。数据库事务复用`server/db/database.ts`的`transaction`，事务内传同一个连接。
-- B/C接口当前尚未实现；详细请求和权限以`docs/team-handoff.md`为准。新增真实接口时同步OpenAPI，不以空响应代替功能。
+- B 的订单、评价和信誉接口已在`feature/orders-credit`实现，说明见[订单实现说明](../orders.md)；C 接口尚未实现，详细请求和权限以`docs/team-handoff.md`为准。新增真实接口时同步OpenAPI，不以空响应代替功能。
 
 ## 接手确认
 

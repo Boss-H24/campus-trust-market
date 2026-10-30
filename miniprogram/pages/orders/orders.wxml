@@ -1,0 +1,29 @@
+<view class="page">
+  <view class="title">我的订单</view>
+  <view class="subtitle">作为买家或卖家查看交易进度</view>
+  <view class="side-tabs">
+    <button class="{{side === 'buyer' ? 'active' : ''}}" data-side="buyer" bindtap="chooseSide">我买到的</button>
+    <button class="{{side === 'seller' ? 'active' : ''}}" data-side="seller" bindtap="chooseSide">我卖出的</button>
+  </view>
+  <view wx:if="{{error}}" class="error" bindtap="retry">{{error}}，点击重试</view>
+  <view wx:for="{{items}}" wx:key="orderNo" class="panel order-card" data-order-no="{{item.orderNo}}" bindtap="open">
+    <view class="row order-head">
+      <text class="order-no">{{item.orderNo}}</text>
+      <text class="badge">{{item.statusText}}</text>
+    </view>
+    <view class="row product-row">
+      <image class="thumbnail" src="{{item.cover}}" mode="aspectFill"/>
+      <view class="grow">
+        <view class="product-title">{{item.product.title}}</view>
+        <view class="muted">交易对象：{{item.counterparty}}</view>
+        <view class="price">¥{{item.amountText}}</view>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{!loading && !items.length && !error}}" class="empty">
+    <view>这里还没有订单</view>
+    <button class="primary" bindtap="goShopping">去逛校园</button>
+  </view>
+  <view wx:if="{{loading}}" class="empty">正在加载订单…</view>
+  <view wx:if="{{items.length && items.length >= total}}" class="end-note">订单已全部显示</view>
+</view>

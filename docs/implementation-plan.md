@@ -1,10 +1,12 @@
 # 成员 A 实施基线
 
+> 文档范围：本计划保留成员 A 基线快照。成员 B 的后续实施规格和计划位于 `docs/superpowers/specs/2026-10-29-orders-credit-design.md` 与 `docs/superpowers/plans/2026-10-29-orders-credit.md`。
+
 用户于2026年10月27日批准实施：微信原生小程序 + TypeScript + Node24 + Express5 + MySQL8.4，私有仓库 Boss-H24/campus-trust-market。
 
 ## 目标
 
-本次完成公共工程、用户认证、隐私保护、商品发布/审核/检索/编辑重审/上下架，以及测试、课堂展示和三人协作材料。B负责订单与评价信誉，C负责咨询收藏举报监管；当前不实现B/C业务，不伪造成功响应。
+A 基线完成公共工程、用户认证、隐私保护、商品发布/审核/检索/编辑重审/上下架，以及测试、课堂展示和三人协作材料。该基线当时将订单评价与咨询监管留给 B/C；B 已在当前 `feature/orders-credit` 分支完成，C 仍在独立分支开发。
 
 ## 固定业务规则
 

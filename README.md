@@ -16,13 +16,13 @@
 | 申请加入小组 | [点击填写协作申请](https://github.com/Boss-H24/campus-trust-market/issues/new?template=join-team.yml) |
 | 完整工程与协作规则 | [当前完整代码](https://github.com/Boss-H24/campus-trust-market/tree/feature/interface-polish) · [分支和 PR 约定](https://github.com/Boss-H24/campus-trust-market/blob/feature/interface-polish/CONTRIBUTING.md) |
 
-当前完整增量位于 `feature/interface-polish`，默认 `main` 保留基础版本；[PR #1](https://github.com/Boss-H24/campus-trust-market/pull/1)由另一位组员复核后合入。上表使用完整分支链接，从仓库默认首页也能直接找到文档。
+成员 A 的完整基线位于 `feature/interface-polish`，默认 `main` 保留更早版本；[PR #1](https://github.com/Boss-H24/campus-trust-market/pull/1)由另一位组员复核后合入。成员 B 的订单与评价增量位于本地分支 `feature/orders-credit`，以 A 的完整基线为起点。上表使用完整分支链接，从仓库默认首页也能直接找到文档。
 
 **加入协作**：本仓库现已公开，代码与文档可直接阅读。小组同学请登录 GitHub 后点击[申请加入小组](https://github.com/Boss-H24/campus-trust-market/issues/new?template=join-team.yml)，填写群内昵称和分工。负责人可从申请作者直接看到 GitHub 账号，确认后发送协作邀请。接受邀请后即可推送自己的分支，也可通过 Fork 和 PR 提交修改。
 
-当前交付是**成员 A 的可运行增量**：登录、学生认证、人工审核、商品发布检索、上下架、隐私保护与测试。订单、模拟支付、评价信誉、咨询和举报由 B/C 继续实现，当前界面不会伪造这些功能已完成。
+当前分支交付 **A + B 的可运行增量**：A 提供登录、学生认证、人工审核、商品发布检索、上下架和隐私保护；B 提供下单、模拟支付、交割、超时、退款、纠纷裁决、双向评价和信誉事件。C 的咨询、收藏、举报及监管工作台仍待接入。
 
-验收状态：13项单元/页面测试、9组真实MySQL集成、官方WXML/WXSS编译和真实模拟器十步完整流程已通过。100并发请求全部成功，本机p95为110.95ms。真机及微信平台真实登录的联调状态单列于测试报告。
+验收状态：当前综合套件包含20项单元/页面行为测试、23组真实MySQL集成测试、11个原生小程序页面静态检查及28个OpenAPI操作一致性检查，均通过；成员 B 新增页面尚待微信开发者工具原生编译与真实导航复验。A 基线曾通过官方WXML/WXSS编译和十步模拟器流程。真机及微信平台真实登录的联调状态单列于测试报告。
 
 组员从[交接包入口](docs/handoff/README.md)开始，按[任务看板](docs/tasks.md)认领工作；分支、PR与提交约定见[仓库协作说明](CONTRIBUTING.md)。当前完整交付分支为 `feature/interface-polish`，见[PR #1](https://github.com/Boss-H24/campus-trust-market/pull/1)，另一位组员复核后合入 `main`。
 
@@ -88,6 +88,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
 
 - [三人分工及交接契约](docs/team-handoff.md)
 - [B/C交接包与首次接入](docs/handoff/README.md)
+- [订单、评价与信誉实现说明](docs/orders.md)
 - [实施任务规划及认领清单](docs/tasks.md)
 - [仓库目录、分支和PR约定](CONTRIBUTING.md)
 - [实现说明及数据库关系](docs/design.md)

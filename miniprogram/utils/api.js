@@ -27,6 +27,11 @@ function imagePath(assetId) {
     const token = wx.getStorageSync('token');
     return new Promise(resolve => wx.downloadFile({ url: config.baseUrl + '/api/media/' + assetId, header: token ? { Authorization: 'Bearer ' + token } : {}, success(result) { resolve(result.statusCode === 200 ? result.tempFilePath : ''); }, fail() { resolve(''); } }));
 }
+function requestId() {
+    const time = Date.now().toString(36);
+    const random = () => Math.random().toString(36).slice(2, 10);
+    return `ord_${time}_${random()}${random()}`;
+}
 async function decorate(product) {
     const format = require('./format');
     return { ...product, priceText: format.money(product.priceCents), conditionText: format.condition(product.condition), statusText: format.status(product.status), cover: product.imageIds.length ? await imagePath(product.imageIds[0]) : '' };
@@ -37,4 +42,4 @@ async function uploadFile(path) {
     return request('/api/uploads', { method: 'POST', data: { contentType: 'image/' + (info.type === 'jpg' ? 'jpeg' : info.type), base64: data.data } });
 }
 function error(page, err) { page.setData({ error: err.message || '操作失败，请重试' }); }
-module.exports = { request, imagePath, decorate, uploadFile, error };
+module.exports = { request, imagePath, requestId, decorate, uploadFile, error };

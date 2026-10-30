@@ -16,7 +16,7 @@ A 的第二个迁移为认证记录增加审核版本。实名及商品审核均
 
 ## B 的冻结接口
 
-这些接口**尚未实现**，不得把 `/api/products/:id/status` 当作订单接口。
+这些接口已在 `feature/orders-credit` 实现；实现细节和验证见[订单实现说明](orders.md)。不得把 `/api/products/:id/status` 当作订单接口。
 
 | 方法与路径 | 输入 | 行为与权限 |
 |---|---|---|
@@ -52,7 +52,7 @@ A 的第二个迁移为认证记录增加审核版本。实名及商品审核均
 
 新增 `orders`、`order_status_log`、`evaluation`、`credit_event`。评价唯一键 `(order_id, reviewer_id)`；信誉事件唯一键 `(event_type, source_id, user_id)`。信誉规则沿用 `CREDIT_RULES`：初始80、完成+1、五星+2/四星+1/三星0/二星-1/一星-3、成立举报-5、刷单-10，范围0～100；完成+1对双方各记一次。
 
-供 C 使用的服务方法由 B 实现并导出：`CreditService.applyEvent(db, {userId,eventType,sourceId,delta})`。`db` 是调用方事务连接，返回 `{applied,creditScore}`；重复事件 `applied=false`，不重复计分。C 不得直接改信誉分。
+供 C 使用的服务方法已由 B 实现并导出：`CreditService.applyEvent(db, {userId,eventType,sourceId,delta})`。`db` 是调用方事务连接，返回 `{applied,creditScore}`；重复事件 `applied=false`，不重复计分。C 不得直接改信誉分。
 
 ## C 的冻结接口
 

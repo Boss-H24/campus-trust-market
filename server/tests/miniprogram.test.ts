@@ -65,3 +65,160 @@ test('小程序页面：切换账号和退出后清除上一用户私有草稿',
     assert.equal(page.data.images.length, 0);
     assert.equal(storage.editingProductId, undefined);
 });
+test('订单工具：请求编号唯一且订单状态有中文标签', () => {
+    const api = load('miniprogram/utils/api.js', {
+        getStorageSync: () => '',
+        request: () => { },
+        removeStorageSync: () => { },
+        hideLoading: () => { },
+        showLoading: () => { }
+    });
+    const first = api.requestId();
+    const second = api.requestId();
+    assert.match(first, /^[A-Za-z0-9_-]{16,64}$/);
+    assert.notEqual(first, second);
+    const format = load('miniprogram/utils/format.js');
+    assert.equal(format.status('PENDING_PAYMENT'), '待付款');
+    assert.equal(format.status('PENDING_CONFIRMATION'), '待确认');
+    assert.equal(format.status('REFUNDING'), '退款中');
+});
+
+function pageDefinition(file: string, api: any, wx: Record<string, any> = {}, format?: any) {
+    let definition: any;
+    const context = vm.createContext({
+        Page: (value: any) => { definition = value; },
+        require: (name: string) => name.endsWith('/api') ? api : name.endsWith('/format') ? (format || load('miniprogram/utils/format.js')) : {},
+        wx, Promise, Error, console, setTimeout, Date, Math
+    });
+    vm.runInContext(readFileSync(file, 'utf8'), context);
+    return {
+        ...definition,
+        setData(patch: Record<string, unknown>) { Object.assign(this.data, patch); },
+        data: { ...definition.data }
+    };
+}
+
+test('订单页面：买家卖家切换使用服务端分页与订单动作', async () => {
+    const requests: any[] = [];
+    const api = {
+        request: async (path: string, options?: any) => {
+            requests.push({ path, options });
+            if (path.startsWith('/api/orders?'))
+                return { items: [], total: 0, page: 1, pageSize: 20 };
+            return { orderNo: 'CM20261029120000ABCDEFGH', version: 0, status: 'PAID' };
+        },
+        requestId: () => 'request-order-0001',
+        error: (page: any, error: Error) => page.setData({ error: error.message })
+    };
+    const page = pageDefinition('miniprogram/pages/orders/orders.js', api, { stopPullDownRefresh() { } });
+    page.data.side = 'buyer';
+    await page.load(true);
+    assert.equal(requests.at(-1).path, '/api/orders?side=buyer&page=1');
+    await page.chooseSide({ currentTarget: { dataset: { side: 'seller' } } });
+    assert.equal(page.data.side, 'seller');
+    assert.equal(requests.at(-1).path, '/api/orders?side=seller&page=1');
+
+    const detail = pageDefinition('miniprogram/pages/order-detail/order-detail.js', api, {
+        navigateTo() { }
+    });
+    detail.orderNo = 'CM20261029120000ABCDEFGH';
+    detail.data.actions = [{ action: 'PAY', label: '模拟支付' }];
+    detail.data.order = { version: 0 };
+    await detail.action({ currentTarget: { dataset: { action: 'PAY' } } });
+    const paid = requests.find(request => request.path.endsWith('/pay'));
+    assert.equal(paid.options.method, 'POST');
+    assert.equal(paid.options.data.version, 0);
+    assert.equal(paid.options.data.requestId, 'request-order-0001');
+    detail.data.actions = [{ action: 'START_DELIVERY', label: '开始交割' }];
+    detail.data.order.version = 2;
+    await detail.action({ currentTarget: { dataset: { action: 'START_DELIVERY' } } });
+    const started = requests.find(request => request.path.endsWith('/status'));
+    assert.equal(started.options.method, 'PUT');
+    assert.equal(started.options.data.action, 'START_DELIVERY');
+    assert.equal(started.options.data.version, 2);
+    const count = requests.length;
+    detail.data.submittingAction = 'PAY';
+    await detail.action({ currentTarget: { dataset: { action: 'PAY' } } });
+    assert.equal(requests.length, count);
+});
+
+test('评价页面：星级边界、提交载荷和公开评价列表', async () => {
+    const requests: any[] = [];
+    const api = {
+        request: async (path: string, options?: any) => {
+            requests.push({ path, options });
+            if (path.startsWith('/api/users/'))
+                return { items: [{ id: '1', reviewerNickname: '周同学', stars: 5, content: '交易顺利', createdAt: new Date().toISOString() }], total: 1, page: 1, pageSize: 20 };
+            if (path.includes('/evaluations'))
+                return { id: '9', stars: options.data.stars, content: options.data.content };
+            if (path.includes('/api/orders/'))
+                return { orderNo: 'CM20261029120000ABCDEFGH', version: 5, status: 'COMPLETED', canEvaluate: true, actions: [], myEvaluation: null };
+            return { items: [], total: 0 };
+        },
+        requestId: () => 'request-review-0001',
+        error: (page: any, error: Error) => page.setData({ error: error.message })
+    };
+    const detail = pageDefinition('miniprogram/pages/order-detail/order-detail.js', api);
+    detail.orderNo = 'CM20261029120000ABCDEFGH';
+    await detail.load();
+    detail.chooseStars({ currentTarget: { dataset: { stars: 1 } } });
+    assert.equal(detail.data.stars, 1);
+    detail.chooseStars({ currentTarget: { dataset: { stars: 5 } } });
+    detail.inputContent({ detail: { value: '交付准时' } });
+    await detail.submitEvaluation();
+    const submitted = requests.find(request => request.path.endsWith('/evaluations') && request.options.method === 'POST');
+    assert.equal(submitted.options.data.stars, 5);
+    assert.equal(submitted.options.data.content, '交付准时');
+
+    const reviews = pageDefinition('miniprogram/pages/reviews/reviews.js', api, { stopPullDownRefresh() { } });
+    reviews.userId = '77';
+    await reviews.load(true);
+    assert.equal(requests.at(-1).path, '/api/users/77/evaluations?page=1&pageSize=20');
+    assert.equal(reviews.data.items[0].starsText, '★★★★★');
+});
+
+test('商品详情：可售商品创建一次订单并跳转详情', async () => {
+    const requests: any[] = [];
+    const navigations: string[] = [];
+    const product = {
+        id: '5', sellerId: '2', status: 'ON_SALE', priceCents: 2500, title: '下单测试教材',
+        description: '九成新', imageIds: ['31'], condition: 'GOOD', statusText: '已上架', priceText: '25.00',
+        seller: { id: '2', nickname: '陈同学', creditScore: 80, certificationStatus: 'VERIFIED' }
+    };
+    const api = {
+        request: async (path: string, options?: any) => {
+            requests.push({ path, options });
+            if (path.startsWith('/api/users/'))
+                return { items: [], total: 0, page: 1, pageSize: 3 };
+            if (path === '/api/orders')
+                return { orderNo: 'CM20261029120000ABCDEFGH' };
+            return product;
+        },
+        decorate: async (value: any) => value,
+        imagePath: async () => '/tmp/product.png',
+        requestId: () => 'request-detail-0001',
+        error: (page: any, error: Error) => page.setData({ error: error.message })
+    };
+    const wx = {
+        getStorageSync: (key: string) => key === 'token' ? 'buyer-token' : { id: '3' },
+        navigateTo: (value: any) => navigations.push(value.url),
+        previewImage() { }
+    };
+    const page = pageDefinition('miniprogram/pages/detail/detail.js', api, wx);
+    page.onLoad({ id: '5' });
+    await page.load();
+    assert.equal(page.data.canBuy, true);
+    await page.order();
+    const created = requests.find(request => request.path === '/api/orders');
+    assert.equal(created.options.data.productId, '5');
+    assert.equal(created.options.data.requestId, 'request-detail-0001');
+    assert.ok(navigations.some(url => url.includes('order-detail?orderNo=CM20261029120000ABCDEFGH')));
+    const count = requests.length;
+    page.data.ordering = true;
+    await page.order();
+    assert.equal(requests.length, count);
+
+    const profile = pageDefinition('miniprogram/pages/profile/profile.js', api, wx);
+    profile.orders();
+    assert.ok(navigations.some(url => url === '/pages/orders/orders'));
+});
