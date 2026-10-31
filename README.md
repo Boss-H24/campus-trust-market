@@ -6,12 +6,14 @@
 
 ## 报告与小组协作入口
 
-**第三部分的 Word 实现报告、在线正文和 PPT 素材都已上传 GitHub，从下表直接进入。**
+**报告已上传：Word当前是A+C增量版（报告说明为16页），B的订单实现说明单独在线提供，尚未并入Word。下表均指向最新试用分支。**
 
 | 资料 | 入口 |
 |---|---|
-| 软件实现报告 Word 文档 | [第三部分软件实现报告.docx](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/implementation-report/第三部分软件实现报告.docx) |
-| 报告在线正文 | [直接在 GitHub 阅读](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/implementation-report/实现报告正文.md) |
+| Word实现报告（A+C增量版） | [第三部分软件实现报告.docx](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/implementation-report/第三部分软件实现报告.docx) |
+| 在线报告正文（含C新增章节） | [直接在 GitHub 阅读](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/implementation-report/实现报告正文.md) |
+| B：订单、评价与信誉实现说明 | [直接在线阅读](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/orders.md) |
+| 报告版本与更新位置 | [版本说明及C章节入口](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/implementation-report/README.md) |
 | PPT 截图与讲解提纲 | [图片、流程图及逐页讲解](https://github.com/Boss-H24/campus-trust-market/tree/codex/try-bc/docs/implementation-report/ppt-assets) |
 | 三人任务规划 | [A/B/C 分工和任务认领](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/tasks.md) |
 | 其他成员接入交接 | [B/C 从这里开始](https://github.com/Boss-H24/campus-trust-market/tree/codex/try-bc/docs/handoff) |
