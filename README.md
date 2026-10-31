@@ -2,33 +2,37 @@
 
 高校二手物品可信交易小程序，《软件工程基础》课程设计。
 
+**最新完整试用（2026-10-31）**：[A+B+C完整代码](https://github.com/Boss-H24/campus-trust-market/tree/codex/try-bc) · [试用说明](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/bc-trial.md) · [新版配色与真实截图](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/ui-colours.md)。当前为开发试用版本，尚未正式发布到微信搜索。
+
 ## 报告与小组协作入口
 
 **第三部分的 Word 实现报告、在线正文和 PPT 素材都已上传 GitHub，从下表直接进入。**
 
 | 资料 | 入口 |
 |---|---|
-| 软件实现报告 Word 文档 | [第三部分软件实现报告.docx](https://github.com/Boss-H24/campus-trust-market/blob/feature/interface-polish/docs/implementation-report/第三部分软件实现报告.docx) |
-| 报告在线正文 | [直接在 GitHub 阅读](https://github.com/Boss-H24/campus-trust-market/blob/feature/interface-polish/docs/implementation-report/实现报告正文.md) |
-| PPT 截图与讲解提纲 | [图片、流程图及逐页讲解](https://github.com/Boss-H24/campus-trust-market/tree/feature/interface-polish/docs/implementation-report/ppt-assets) |
-| 三人任务规划 | [A/B/C 分工和任务认领](https://github.com/Boss-H24/campus-trust-market/blob/feature/interface-polish/docs/tasks.md) |
-| 其他成员接入交接 | [B/C 从这里开始](https://github.com/Boss-H24/campus-trust-market/tree/feature/interface-polish/docs/handoff) |
+| 软件实现报告 Word 文档 | [第三部分软件实现报告.docx](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/implementation-report/第三部分软件实现报告.docx) |
+| 报告在线正文 | [直接在 GitHub 阅读](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/implementation-report/实现报告正文.md) |
+| PPT 截图与讲解提纲 | [图片、流程图及逐页讲解](https://github.com/Boss-H24/campus-trust-market/tree/codex/try-bc/docs/implementation-report/ppt-assets) |
+| 三人任务规划 | [A/B/C 分工和任务认领](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/tasks.md) |
+| 其他成员接入交接 | [B/C 从这里开始](https://github.com/Boss-H24/campus-trust-market/tree/codex/try-bc/docs/handoff) |
 | 申请加入小组 | [点击填写协作申请](https://github.com/Boss-H24/campus-trust-market/issues/new?template=join-team.yml) |
-| 完整工程与协作规则 | [当前完整代码](https://github.com/Boss-H24/campus-trust-market/tree/feature/interface-polish) · [分支和 PR 约定](https://github.com/Boss-H24/campus-trust-market/blob/feature/interface-polish/CONTRIBUTING.md) |
+| 完整工程与协作规则 | [当前完整代码](https://github.com/Boss-H24/campus-trust-market/tree/codex/try-bc) · [分支和 PR 约定](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/CONTRIBUTING.md) |
 
-当前完整增量位于 `feature/interface-polish`，默认 `main` 保留基础版本；[PR #1](https://github.com/Boss-H24/campus-trust-market/pull/1)由另一位组员复核后合入。上表使用完整分支链接，从仓库默认首页也能直接找到文档。
+完整开发试用位于 `codex/try-bc`，默认 `main` 保留基础代码；应用代码仍按小组约定经同伴复核后合入。上表全部指向完整试用分支，从默认首页即可找到最新文档。
 
 **加入协作**：本仓库现已公开，代码与文档可直接阅读。小组同学请登录 GitHub 后点击[申请加入小组](https://github.com/Boss-H24/campus-trust-market/issues/new?template=join-team.yml)，填写群内昵称和分工。负责人可从申请作者直接看到 GitHub 账号，确认后发送协作邀请。接受邀请后即可推送自己的分支，也可通过 Fork 和 PR 提交修改。
 
-当前交付是**成员 A 的可运行增量**：登录、学生认证、人工审核、商品发布检索、上下架、隐私保护与测试。订单、模拟支付、评价信誉、咨询和举报由 B/C 继续实现，当前界面不会伪造这些功能已完成。
+完整试用已接入 A 的用户与商品、B 的订单/模拟支付/评价信誉，以及 C 的咨询/收藏/举报和监管工作台。B/C信誉适配与监管冻结兼容修正均保存在试用分支，具体范围及演示方式见上方说明。
 
-验收状态：后端业务测试、官方WXML/WXSS编译和真实模拟器九步完整流程已通过。首次空白由开发工具基础库缓存移动失败引起，现已恢复；默认隐藏上传目录中的图片访问也已补回归并修复。真机及微信平台真实登录的联调状态单列于测试报告。
+验证记录：完整试用的27项单元/页面、36项真实MySQL集成及七项原生页面检查已通过（原生检查分段续跑，详见试用说明）。本次配色另经14页静态检查、50操作契约、14个WXML和15个WXSS官方编译及三张真实页面截图检查。手机预览、平台真实登录和正式上线另行验收。
 
 ## 快速运行 Windows
 
 在项目根目录打开 PowerShell：
 
 ```powershell
+git fetch origin
+git switch codex/try-bc
 powershell -ExecutionPolicy Bypass -File .\scripts\setup.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
 ```
