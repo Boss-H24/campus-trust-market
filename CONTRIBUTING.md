@@ -24,7 +24,7 @@
 ```powershell
 git clone https://github.com/Boss-H24/campus-trust-market.git
 cd campus-trust-market
-git switch feature/interface-polish
+git switch main
 powershell -ExecutionPolicy Bypass -File .\scripts\setup.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
 ```
@@ -33,9 +33,9 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
 
 ## 开发与提交
 
-1. PR #1合入后，从更新的`main`创建`feature/orders-credit`（B）或`feature/chat-reports`（C）。需要提前开发时从`feature/interface-polish`分支创建；A的PR合入后将最新main合并进自己的分支。
+1. `main`为A、B、C接续完成的统一项目。每次先同步main，再提交自己的小范围改动；运行和交付均以main为准。
 2. 在[任务清单](docs/tasks.md)对应项填写自己的GitHub用户名并勾选状态。一次PR只处理一个可验证增量。
-3. 新迁移用`003_b_...sql`和`004_c_...sql`起步；后续编号先协调。已应用的迁移不能修改，迁移工具会校验摘要。
+3. 003/004迁移已合入；后续从005开始协调新增迁移。已应用的迁移不能修改，迁移工具会校验摘要。
 4. 公共鉴权、状态或接口变化先与A及相关成员讨论；实际接口同步OpenAPI和接入文档。
 5. 提交前执行下列检查；PR写清需求/任务编号、行为、迁移、验证命令及未完成事项。
 

@@ -6,7 +6,7 @@
 
 ## 获取与启动
 
-仓库已公开，可直接在线阅读。按[协作说明](../../CONTRIBUTING.md)克隆并切换分支进行开发；小组同学先填写[协作申请](https://github.com/Boss-H24/campus-trust-market/issues/new?template=join-team.yml)，负责人核对身份后邀请写入权限。每台电脑首次执行setup生成独立配置，不需要A的数据库或密码。
+仓库已公开，可直接在线阅读。按[协作说明](../../CONTRIBUTING.md)克隆main统一项目继续开发；小组同学先填写[协作申请](https://github.com/Boss-H24/campus-trust-market/issues/new?template=join-team.yml)，负责人核对身份后邀请写入权限。每台电脑首次执行setup生成独立配置，不需要A的数据库或密码。
 
 固定交接快照：[member-a-20261028 源码ZIP](https://github.com/Boss-H24/campus-trust-market/archive/refs/tags/member-a-20261028.zip)。该快照供验收留档，后续协作使用Git分支与PR，避免相互覆盖文件。
 
