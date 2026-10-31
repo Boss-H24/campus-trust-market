@@ -8,19 +8,21 @@
 
 ## 报告与小组协作入口
 
-**第三部分的 Word 实现报告、在线正文和 PPT 素材都已上传 GitHub，从下表直接进入。**
+**报告已上传：Word当前是A+C增量版（报告说明为16页），B的订单实现说明单独在线提供，尚未并入Word。下表均指向最新试用分支。**
 
 | 资料 | 入口 |
 |---|---|
-| 软件实现报告 Word 文档 | [第三部分软件实现报告.docx](https://github.com/Boss-H24/campus-trust-market/blob/feature/interface-polish/docs/implementation-report/第三部分软件实现报告.docx) |
-| 报告在线正文 | [直接在 GitHub 阅读](https://github.com/Boss-H24/campus-trust-market/blob/feature/interface-polish/docs/implementation-report/实现报告正文.md) |
-| PPT 截图与讲解提纲 | [图片、流程图及逐页讲解](https://github.com/Boss-H24/campus-trust-market/tree/feature/interface-polish/docs/implementation-report/ppt-assets) |
-| 三人任务规划 | [A/B/C 分工和任务认领](https://github.com/Boss-H24/campus-trust-market/blob/feature/interface-polish/docs/tasks.md) |
-| 其他成员接入交接 | [B/C 从这里开始](https://github.com/Boss-H24/campus-trust-market/tree/feature/interface-polish/docs/handoff) |
+| Word实现报告（A+C增量版） | [第三部分软件实现报告.docx](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/implementation-report/第三部分软件实现报告.docx) |
+| 在线报告正文（含C新增章节） | [直接在 GitHub 阅读](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/implementation-report/实现报告正文.md) |
+| B：订单、评价与信誉实现说明 | [直接在线阅读](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/orders.md) |
+| 报告版本与更新位置 | [版本说明及C章节入口](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/implementation-report/README.md) |
+| PPT 截图与讲解提纲 | [图片、流程图及逐页讲解](https://github.com/Boss-H24/campus-trust-market/tree/codex/try-bc/docs/implementation-report/ppt-assets) |
+| 三人任务规划 | [A/B/C 分工和任务认领](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/docs/tasks.md) |
+| 其他成员接入交接 | [B/C 从这里开始](https://github.com/Boss-H24/campus-trust-market/tree/codex/try-bc/docs/handoff) |
 | 申请加入小组 | [点击填写协作申请](https://github.com/Boss-H24/campus-trust-market/issues/new?template=join-team.yml) |
-| 完整工程与协作规则 | [当前完整代码](https://github.com/Boss-H24/campus-trust-market/tree/feature/interface-polish) · [分支和 PR 约定](https://github.com/Boss-H24/campus-trust-market/blob/feature/interface-polish/CONTRIBUTING.md) |
+| 完整工程与协作规则 | [当前完整代码](https://github.com/Boss-H24/campus-trust-market/tree/codex/try-bc) · [分支和 PR 约定](https://github.com/Boss-H24/campus-trust-market/blob/codex/try-bc/CONTRIBUTING.md) |
 
-成员 A 的完整基线位于 `feature/interface-polish`，默认 `main` 保留更早版本；[PR #1](https://github.com/Boss-H24/campus-trust-market/pull/1)由另一位组员复核后合入。成员 B 的订单与评价增量位于本地分支 `feature/orders-credit`，以 A 的完整基线为起点。上表使用完整分支链接，从仓库默认首页也能直接找到文档。
+A阶段原分支和历史标签保留原样，当前统一试用与报告入口为`codex/try-bc`。同学推送自己的功能分支后，需将文档修改同步到该分支；其他分支不会自动更新。
 
 **加入协作**：本仓库现已公开，代码与文档可直接阅读。小组同学请登录 GitHub 后点击[申请加入小组](https://github.com/Boss-H24/campus-trust-market/issues/new?template=join-team.yml)，填写群内昵称和分工。负责人可从申请作者直接看到 GitHub 账号，确认后发送协作邀请。接受邀请后即可推送自己的分支，也可通过 Fork 和 PR 提交修改。
 
@@ -28,7 +30,7 @@
 
 验收状态：当前综合套件包含20项单元/页面行为测试、23组真实MySQL集成测试、11个原生小程序页面静态检查及28个OpenAPI操作一致性检查，均通过；成员 B 新增页面尚待微信开发者工具原生编译与真实导航复验。A 基线曾通过官方WXML/WXSS编译和十步模拟器流程。真机及微信平台真实登录的联调状态单列于测试报告。
 
-组员从[交接包入口](docs/handoff/README.md)开始，按[任务看板](docs/tasks.md)认领工作；分支、PR与提交约定见[仓库协作说明](CONTRIBUTING.md)。当前完整交付分支为 `feature/interface-polish`，见[PR #1](https://github.com/Boss-H24/campus-trust-market/pull/1)，另一位组员复核后合入 `main`。
+组员从[交接包入口](docs/handoff/README.md)开始，按[任务看板](docs/tasks.md)认领工作；分支、PR与提交约定见[仓库协作说明](CONTRIBUTING.md)。当前完整交付分支为 `codex/try-bc`，见[PR #1](https://github.com/Boss-H24/campus-trust-market/pull/1)，另一位组员复核后合入 `main`。
 
 界面预览：[校园首页](docs/images/home.jpg)、[商品详情](docs/images/detail.png)。图片来自真实开发者工具，商品与学生身份均为虚构演示数据。
 
