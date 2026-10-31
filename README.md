@@ -1,95 +1,68 @@
 # 校园拾集
 
-高校二手物品可信交易小程序，《软件工程基础》课程设计。
+高校二手物品可信交易小程序，《软件工程基础》课程设计。**本仓库是小组共用的唯一项目，所有已完成模块都集成在默认分支 `main`。** 项目供本地开发者工具试用，尚未发布到微信搜索。
 
-**统一完整项目（2026-10-31）**：[A+B+C完整代码](https://github.com/Boss-H24/campus-trust-market/tree/main) · [试用说明](https://github.com/Boss-H24/campus-trust-market/blob/main/docs/bc-trial.md) · [新版配色与真实截图](https://github.com/Boss-H24/campus-trust-market/blob/main/docs/ui-colours.md)。当前为开发试用版本，尚未正式发布到微信搜索。
+## 项目、报告与协作
 
-## 报告与小组协作入口
-
-**报告已上传：Word当前是A+C增量版（报告说明为16页），B的订单实现说明单独在线提供，尚未并入Word。下表均指向main统一项目。**
-
-| 资料 | 入口 |
+| 内容 | 链接 |
 |---|---|
-| Word实现报告（A+C增量版） | [第三部分软件实现报告.docx](https://github.com/Boss-H24/campus-trust-market/blob/main/docs/implementation-report/第三部分软件实现报告.docx) |
-| 在线报告正文（含C新增章节） | [直接在 GitHub 阅读](https://github.com/Boss-H24/campus-trust-market/blob/main/docs/implementation-report/实现报告正文.md) |
-| B：订单、评价与信誉实现说明 | [直接在线阅读](https://github.com/Boss-H24/campus-trust-market/blob/main/docs/orders.md) |
-| 报告版本与更新位置 | [版本说明及C章节入口](https://github.com/Boss-H24/campus-trust-market/blob/main/docs/implementation-report/README.md) |
-| PPT 截图与讲解提纲 | [图片、流程图及逐页讲解](https://github.com/Boss-H24/campus-trust-market/tree/main/docs/implementation-report/ppt-assets) |
-| 三人任务规划 | [A/B/C 分工和任务认领](https://github.com/Boss-H24/campus-trust-market/blob/main/docs/tasks.md) |
-| 其他成员接入交接 | [B/C 从这里开始](https://github.com/Boss-H24/campus-trust-market/tree/main/docs/handoff) |
-| 申请加入小组 | [点击填写协作申请](https://github.com/Boss-H24/campus-trust-market/issues/new?template=join-team.yml) |
-| 完整工程与协作规则 | [当前完整代码](https://github.com/Boss-H24/campus-trust-market/tree/main) · [分支和 PR 约定](https://github.com/Boss-H24/campus-trust-market/blob/main/CONTRIBUTING.md) |
+| **第三部分软件实现报告（Word）** | [打开完整报告](docs/implementation-report/第三部分软件实现报告.docx) |
+| 实现报告（GitHub 在线正文） | [阅读 Markdown](docs/implementation-report/实现报告正文.md) |
+| PPT 图片与素材来源 | [20张模拟器截图、4张流程图及讲解提纲](docs/implementation-report/ppt-assets/README.md) |
+| 小组任务与进度 | [按功能模块查看](docs/tasks.md) |
+| 同学加入协作 | [填写 GitHub 申请](https://github.com/Boss-H24/campus-trust-market/issues/new?template=join-team.yml) |
+| 代码协作与接手说明 | [CONTRIBUTING](CONTRIBUTING.md) · [统一项目交接](docs/handoff/README.md) |
 
-`main`现已统一包含A、B、C的完整工程、报告和图片，是小组唯一的交付与运行入口。功能开发按任务协作，完成后同步回main，首页文档不再跳转到其他开发版本。
+代码和文档均可公开阅读。申请写入权限后，可在同一项目中协作；功能改动通过分支和 PR 汇入 `main`，但运行、报告和演示始终以这一个统一项目为准。历史分支与提交只用于保留开发记录。
 
-**加入协作**：本仓库现已公开，代码与文档可直接阅读。小组同学请登录 GitHub 后点击[申请加入小组](https://github.com/Boss-H24/campus-trust-market/issues/new?template=join-team.yml)，填写群内昵称和分工。负责人可从申请作者直接看到 GitHub 账号，确认后发送协作邀请。接受邀请后即可推送自己的分支，也可通过 Fork 和 PR 提交修改。
+## 已实现功能
 
-main已接入 A 的用户与商品、B 的订单/模拟支付/评价信誉，以及 C 的咨询/收藏/举报和监管工作台。B/C信誉适配与监管冻结兼容修正均已合入main，具体范围及演示方式见上方说明。
+- 学生演示登录、学籍实名提交与管理员审核、个人资料脱敏。
+- 商品图片上传、发布审核、上下架、编辑重审、分类/关键词/价格检索。
+- 订单创建、模拟支付、交割确认、取消退款和纠纷处理。
+- 双向评价、信誉事件、站内咨询、收藏、商品举报及监管工作台。
+- 隐私加密、服务端权限/状态校验、重复发布与并发拦截。
 
-验证记录：完整试用的27项单元/页面、36项真实MySQL集成及七项原生页面检查已通过（原生检查分段续跑，详见试用说明）。本次配色另经14页静态检查、50操作契约、14个WXML和15个WXSS官方编译及三张真实页面截图检查。手机预览、平台真实登录和正式上线另行验收。
+支付、退款和学籍校验为本地课堂演示。微信平台真实登录需要配置服务端 AppSecret，尚未联调；本项目也尚未发布为可搜索的小程序。
 
-## 快速运行 Windows
+## Windows 本地运行
 
 在项目根目录打开 PowerShell：
 
 ```powershell
-git fetch origin
-git switch main
+git clone https://github.com/Boss-H24/campus-trust-market.git
+cd campus-trust-market
 powershell -ExecutionPolicy Bypass -File .\scripts\setup.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
 ```
 
-首次准备需要联网：下载项目本地 npm、MySQL，必要时下载 Node 24。运行文件保存在 `.tools`，数据库、图片与日志保存在 `.runtime`，不安装 Windows 服务，不修改全局 npm。中文目录会自动在用户本地应用目录 `CampusTrustMarket` 下创建专用 ASCII junction 兼容 MySQL 的路径处理；数据仍在项目目录。
-
-服务地址：[健康检查](http://127.0.0.1:3000/api/health)。MySQL 默认监听 `127.0.0.1:3307`。首次启动随机生成 `.env`，其中 `DEMO_PASSWORD` 是演示账号的共同密码；不要将 `.env` 发进群或提交 Git。再次 setup 不覆盖配置和业务数据。
-
-如果依赖已经准备好，离线执行 `scripts/setup.ps1 -SkipDownloads`。如使用自己安装的数据库，修改 `.env` 的连接配置，跳过 `start-db.ps1`，直接执行迁移与种子命令。
+首次准备需要联网下载项目本地 Node/npm 和 MySQL。程序运行数据放在被 Git 忽略的 `.runtime`，本机配置 `.env` 不要提交或发给同学。健康检查：[http://127.0.0.1:3000/api/health](http://127.0.0.1:3000/api/health)。
 
 ### 微信开发者工具
 
-1. 安装[微信开发者工具](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)，选择“导入项目”，目录为 `miniprogram`。
-2. 当前项目已配置本组申请的测试号 AppID `wx586d8f7c807a2c06`。使用该号需要相应开发权限；组员也可换成自己的测试号或 `touristappid`。本地调试关闭合法域名校验，工具可能要求先登录微信。
-3. 保持后端启动，在“我的”中选择“课堂演示登录”，输入 `.env` 中的 `DEMO_PASSWORD`。
-4. 真机不能访问电脑的 `127.0.0.1`。真机联调时把 `miniprogram/config.js` 改为电脑局域网地址，同时修改 `.env` 的 `HOST`，配置网络访问。上线使用 HTTPS 和已登记域名。
+1. 安装微信开发者工具，导入仓库中的 `miniprogram` 目录。
+2. 保持本地后端运行；本地调试关闭合法域名校验。
+3. 在“我的”页面选择课堂演示登录，使用本机 `.env` 中的 `DEMO_PASSWORD`。
+4. 真机联调需要改用电脑局域网地址；线上环境需要 HTTPS 和登记域名。
 
-真实微信登录：配置服务端 `.env` 中的 `WECHAT_APP_ID`、`WECHAT_APP_SECRET`，以及小程序 `project.config.json` 中的同一个 AppID。密钥只放服务端；`session_key` 不返回客户端。`NODE_ENV=production` 强制禁用演示登录并要求微信配置。当前已配置测试号 AppID，AppSecret 尚未配置，平台真实登录未验收。
+演示账号均为虚构数据：`seller`（陈同学）、`buyer`（周同学）、`newstudent`（林同学）、`admin`（平台管理员）、`outsider`（未认证访客）。密码只保存在本机配置。
 
-## 演示身份
-
-以下数据均为虚构，学校为“演示大学”。
-
-| 账号 | 身份 | 初始认证 | 用途 |
-|---|---|---|---|
-| seller | 陈同学 | 已通过 | 发布与管理商品 |
-| buyer | 周同学 | 已通过 | 浏览商品、验证越权 |
-| newstudent | 林同学 | 未认证 | 姓名“林同学”、学号 `2023000004`、手机号 `13800000004`，演示完整审核流程 |
-| admin | 平台管理员 | 已通过 | 审核实名、审核商品 |
-| outsider | 访客同学 | 未认证，无有效学籍 | 演示身份校验拦截 |
-
-## 开发与测试
-
-无需系统全局 npm，可使用仓库脚本：
+## 检查命令
 
 ```powershell
 .\scripts\npm.ps1 run check
-.\scripts\npm.ps1 test
 .\scripts\npm.ps1 run build
+.\scripts\npm.ps1 test
 .\scripts\npm.ps1 run test:integration
 .\scripts\npm.ps1 run test:performance
-# 可选：使用已安装的官方原生编译器检查模板和样式
-.\scripts\check-native.ps1 -DevToolsPath 'E:\Apps\微信web开发者工具'
 ```
 
-数据库初始化：`scripts/npm.ps1 run db:migrate`、`scripts/npm.ps1 run db:seed`。独立测试库为 `campus_market_test`，集成测试只重置该库；不会清空 `campus_market`。停止便携数据库执行 `scripts/stop-db.ps1`，先退出后端进程。
+当前报告记录了类型/构建、页面与接口契约、单元及 MySQL 集成、原生编译和本机并发检索证据，及其适用范围：[测试记录](docs/test-report.md)。集成测试只重置 `.env` 明确配置的独立 `_test` 数据库，不要与其他数据库任务同时运行。
 
-原生模拟器自动验收另见 [测试报告](docs/test-report.md#原生模拟器流程复验)。可选工具 SDK 安装到忽略的 `.tools/automator`，不加入应用依赖；脚本使用真实页面、接口和 MySQL，仅为相册选择器提供虚构图片。
+## 文档索引
 
-## 协作文档
+- [需求与设计](docs/design.md) · [接口与功能交接](docs/team-handoff.md) · [OpenAPI 接口](docs/openapi.json) · [变更记录](docs/changes.md)
+- [测试记录](docs/test-report.md) · [课堂演示流程](docs/classroom-demo.md)
+- [摄影样图来源与授权](assets/demo-products/README.md)
 
-- [三人分工及交接契约](docs/team-handoff.md)
-- [实现说明及数据库关系](docs/design.md)
-- [OpenAPI 接口契约](docs/openapi.json)
-- [测试记录与人工验收单](docs/test-report.md)
-- [课堂演示步骤与讲解](docs/classroom-demo.md)
-
-技术：Node 24 LTS、TypeScript、Express 5、MySQL2、MySQL 8.4；后端 Controller → Service → Repository。公共接口返回 `{code,message,data,requestId}`；金额采用整数分，数据库 bigint 编号以字符串传输。
+技术路线：微信原生小程序、TypeScript、Node.js 24、Express 5、MySQL 8.4（兼容8.0）；服务端按 Controller、Service、Repository 分层。
